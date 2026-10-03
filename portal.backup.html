@@ -1,0 +1,543 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Client Portal | Adan</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        .portal-page {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+
+        .portal-box {
+            width: min(460px, 100%);
+            padding: 35px;
+            border-radius: 24px;
+            background: rgba(10, 20, 38, .82);
+            border: 1px solid rgba(56, 189, 248, .2);
+            box-shadow: 0 25px 80px rgba(0, 0, 0, .35);
+            backdrop-filter: blur(20px);
+        }
+
+        .portal-box h1 {
+            margin-bottom: 8px;
+        }
+
+        .portal-box > p {
+            color: rgba(255,255,255,.65);
+            margin-bottom: 28px;
+        }
+
+        .portal-form {
+            display: grid;
+            gap: 15px;
+        }
+
+        .portal-form input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 14px 16px;
+            border-radius: 11px;
+            border: 1px solid rgba(56, 189, 248, .2);
+            background: rgba(0, 0, 0, .3);
+            color: white;
+            font: inherit;
+            outline: none;
+        }
+
+        .portal-form input:focus {
+            border-color: #38bdf8;
+            box-shadow: 0 0 0 3px rgba(56,189,248,.1);
+        }
+
+        .portal-button {
+            border: 0;
+            padding: 14px;
+            border-radius: 11px;
+            background: linear-gradient(
+                135deg,
+                #2563eb,
+                #38bdf8
+            );
+            color: white;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: .2s;
+        }
+
+        .portal-button:hover {
+            transform: translateY(-2px);
+        }
+
+        .portal-button:disabled {
+            opacity: .6;
+            cursor: wait;
+            transform: none;
+        }
+
+        .portal-message {
+            display: none;
+            margin-bottom: 18px;
+            padding: 13px;
+            border-radius: 10px;
+            font-size: .95rem;
+        }
+
+        .portal-message.show {
+            display: block;
+        }
+
+        .portal-message.error {
+            background: rgba(239,68,68,.12);
+            border: 1px solid rgba(239,68,68,.3);
+            color: #fca5a5;
+        }
+
+        .portal-message.success {
+            background: rgba(34,197,94,.12);
+            border: 1px solid rgba(34,197,94,.3);
+            color: #86efac;
+        }
+
+        .portal-links {
+            margin-top: 22px;
+            text-align: center;
+        }
+
+        .portal-links a {
+            color: #38bdf8;
+            text-decoration: none;
+        }
+
+        .dashboard {
+            display: none;
+        }
+
+        .dashboard.show {
+            display: block;
+        }
+
+        .login.show {
+            display: block;
+        }
+
+        .login {
+            display: none;
+        }
+
+        .dashboard-card {
+            margin-top: 18px;
+            padding: 20px;
+            border-radius: 15px;
+            background: rgba(255,255,255,.04);
+            border: 1px solid rgba(56,189,248,.12);
+        }
+
+        .logout-button {
+            margin-top: 20px;
+            width: 100%;
+            background: #334155;
+        }
+
+        .brand {
+            display: inline-block;
+            margin-bottom: 20px;
+            font-weight: 800;
+            color: #38bdf8;
+        }
+    </style>
+</head>
+
+<body>
+
+<main class="portal-page">
+
+    <div class="portal-box">
+
+        <!-- LOGIN -->
+
+        <section id="loginSection" class="login show">
+
+            <div class="brand">
+                ADAN.DEV
+            </div>
+
+            <h1>
+                Client <span class="gradient-text">Portal</span>
+            </h1>
+
+            <p>
+                Sign in to access your client workspace.
+            </p>
+
+            <div
+                id="message"
+                class="portal-message"
+            ></div>
+
+            <form
+                id="loginForm"
+                class="portal-form"
+            >
+
+                <input
+                    id="email"
+                    type="email"
+                    autocomplete="email"
+                    placeholder="Email address"
+                    required
+                >
+
+                <input
+                    id="password"
+                    type="password"
+                    autocomplete="current-password"
+                    placeholder="Password"
+                    required
+                >
+
+                <button
+                    id="loginButton"
+                    class="portal-button"
+                    type="submit"
+                >
+                    Sign In
+                </button>
+
+            </form>
+
+            <div class="portal-links">
+                <a href="index.html">
+                    ← Back to portfolio
+                </a>
+            </div>
+
+        </section>
+
+
+        <!-- CUSTOMER DASHBOARD -->
+
+        <section
+            id="dashboardSection"
+            class="dashboard"
+        >
+
+            <div class="brand">
+                ADAN.DEV
+            </div>
+
+            <h1>
+                Welcome back 👋
+            </h1>
+
+            <p>
+                You're signed in to your client portal.
+            </p>
+
+            <div class="dashboard-card">
+
+                <h3 id="welcomeName">
+                    Client
+                </h3>
+
+                <p id="welcomeEmail"></p>
+
+            </div>
+
+            <div class="dashboard-card">
+
+                <h3>Reviews</h3>
+
+                <p>
+                    You can submit feedback about your
+                    experience working with Adan.
+                </p>
+
+                <a
+                    href="portal.html?review=true"
+                    class="portal-button"
+                    style="
+                        display:block;
+                        text-align:center;
+                        text-decoration:none;
+                        margin-top:15px;
+                    "
+                >
+                    Leave a Review
+                </a>
+
+            </div>
+
+            <button
+                id="logoutButton"
+                class="portal-button logout-button"
+            >
+                Sign Out
+            </button>
+
+            <div class="portal-links">
+                <a href="index.html">
+                    ← Back to portfolio
+                </a>
+            </div>
+
+        </section>
+
+    </div>
+
+</main>
+
+
+<script>
+
+const API =
+    "https://adan-portfolio-api.adanfuau1.workers.dev";
+
+const loginSection =
+    document.getElementById("loginSection");
+
+const dashboardSection =
+    document.getElementById("dashboardSection");
+
+const message =
+    document.getElementById("message");
+
+function showMessage(
+    text,
+    type = "error"
+) {
+
+    message.textContent = text;
+
+    message.className =
+        `portal-message show ${type}`;
+}
+
+function hideMessage() {
+
+    message.className =
+        "portal-message";
+}
+
+async function apiRequest(
+    path,
+    options = {}
+) {
+
+    const response =
+        await fetch(
+            API + path,
+            {
+                credentials: "include",
+                ...options,
+                headers: {
+                    "Content-Type":
+                        "application/json",
+                    ...(options.headers || {})
+                }
+            }
+        );
+
+    let data = {};
+
+    try {
+        data = await response.json();
+    } catch {}
+
+    if (!response.ok) {
+
+        throw new Error(
+            data.error ||
+            `Request failed (${response.status})`
+        );
+    }
+
+    return data;
+}
+
+
+async function checkSession() {
+
+    try {
+
+        const data =
+            await apiRequest("/auth/me");
+
+        if (
+            data.authenticated &&
+            data.account
+        ) {
+
+            if (
+                data.account.role === "owner"
+            ) {
+
+                window.location.href =
+                    "owner.html";
+
+                return;
+            }
+
+            showDashboard(
+                data.account
+            );
+        }
+
+    } catch (error) {
+
+        console.log(
+            "No active session."
+        );
+    }
+}
+
+
+function showDashboard(account) {
+
+    loginSection.classList.remove(
+        "show"
+    );
+
+    dashboardSection.classList.add(
+        "show"
+    );
+
+    document.getElementById(
+        "welcomeName"
+    ).textContent =
+        account.display_name ||
+        "Client";
+
+    document.getElementById(
+        "welcomeEmail"
+    ).textContent =
+        account.email || "";
+
+}
+
+
+document
+    .getElementById("loginForm")
+    .addEventListener(
+        "submit",
+        async event => {
+
+            event.preventDefault();
+
+            hideMessage();
+
+            const button =
+                document.getElementById(
+                    "loginButton"
+                );
+
+            button.disabled = true;
+            button.textContent =
+                "Signing in...";
+
+            const email =
+                document.getElementById(
+                    "email"
+                ).value.trim();
+
+            const password =
+                document.getElementById(
+                    "password"
+                ).value;
+
+            try {
+
+                const data =
+                    await apiRequest(
+                        "/auth/login",
+                        {
+                            method: "POST",
+                            body:
+                                JSON.stringify({
+                                    email,
+                                    password
+                                })
+                        }
+                    );
+
+                showMessage(
+                    "Signed in successfully!",
+                    "success"
+                );
+
+                if (
+                    data.account &&
+                    data.account.role === "owner"
+                ) {
+
+                    setTimeout(() => {
+
+                        window.location.href =
+                            "owner.html";
+
+                    }, 250);
+
+                    return;
+                }
+
+                showDashboard(
+                    data.account
+                );
+
+            } catch (error) {
+
+                showMessage(
+                    error.message ||
+                    "Unable to sign in."
+                );
+
+            } finally {
+
+                button.disabled = false;
+                button.textContent =
+                    "Sign In";
+            }
+
+        }
+    );
+
+
+document
+    .getElementById("logoutButton")
+    .addEventListener(
+        "click",
+        async () => {
+
+            try {
+
+                await apiRequest(
+                    "/auth/logout",
+                    {
+                        method: "POST"
+                    }
+                );
+
+            } finally {
+
+                window.location.reload();
+            }
+
+        }
+    );
+
+
+checkSession();
+
+</script>
+
+</body>
+</html>

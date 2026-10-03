@@ -1,0 +1,11 @@
+﻿name = "adan-portfolio-api"
+main = "src/index.js"
+compatibility_date = "2026-10-02"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "adan-portfolio-db"
+database_id = "e8c3df9d-090b-441b-a537-d95c57e98e61"
+
+[vars]
+ALLOWED_ORIGIN = "http://127.0.0.1:8000"

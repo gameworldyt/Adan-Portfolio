@@ -1,0 +1,1458 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Owner Dashboard | Adan</title>
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        .admin-page {
+            min-height: 100vh;
+            padding: 120px 6% 60px;
+        }
+
+        .admin-header {
+            margin-bottom: 30px;
+        }
+
+        .admin-header h1 {
+            font-size: clamp(2rem, 5vw, 3.5rem);
+        }
+
+        .admin-tabs {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+        }
+
+        .admin-tab {
+            border: 1px solid rgba(56, 189, 248, .25);
+            background: rgba(255,255,255,.05);
+            color: #fff;
+            padding: 11px 18px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: .2s;
+        }
+
+        .admin-tab:hover,
+        .admin-tab.active {
+            background: rgba(37,99,235,.35);
+            border-color: #38bdf8;
+        }
+
+        .admin-panel {
+            display: none;
+        }
+
+        .admin-panel.active {
+            display: block;
+        }
+
+        .admin-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 18px;
+            margin-bottom: 25px;
+        }
+
+        .admin-card {
+            background: rgba(10,20,38,.75);
+            border: 1px solid rgba(56,189,248,.18);
+            border-radius: 18px;
+            padding: 22px;
+            backdrop-filter: blur(15px);
+        }
+
+        .admin-card h3 {
+            margin-top: 0;
+        }
+
+        .admin-stat {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #38bdf8;
+        }
+
+        .admin-form {
+            display: grid;
+            gap: 14px;
+            margin-bottom: 30px;
+        }
+
+        .admin-form input,
+        .admin-form textarea,
+        .admin-form select {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 13px 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(56,189,248,.2);
+            background: rgba(0,0,0,.3);
+            color: white;
+            font: inherit;
+        }
+
+        .admin-form textarea {
+            min-height: 110px;
+            resize: vertical;
+        }
+
+        .admin-form select option {
+            background: #07111f;
+        }
+
+        .checkbox-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .checkbox-row input {
+            width: auto;
+        }
+
+        .admin-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            padding: 18px;
+            margin-bottom: 12px;
+            border: 1px solid rgba(56,189,248,.15);
+            border-radius: 14px;
+            background: rgba(255,255,255,.035);
+        }
+
+        .admin-item-info {
+            flex: 1;
+        }
+
+        .admin-item-info h3,
+        .admin-item-info p {
+            margin: 4px 0;
+        }
+
+        .admin-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .small-button {
+            border: 0;
+            border-radius: 9px;
+            padding: 9px 13px;
+            cursor: pointer;
+            color: white;
+            background: #2563eb;
+        }
+
+        .small-button.danger {
+            background: #dc2626;
+        }
+
+        .small-button.secondary {
+            background: #334155;
+        }
+
+        .message {
+            padding: 14px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .message.show {
+            display: block;
+        }
+
+        .message.success {
+            background: rgba(34,197,94,.12);
+            border: 1px solid rgba(34,197,94,.35);
+        }
+
+        .message.error {
+            background: rgba(239,68,68,.12);
+            border: 1px solid rgba(239,68,68,.35);
+        }
+
+        .top-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .loading {
+            opacity: .65;
+            pointer-events: none;
+        }
+
+        @media (max-width: 700px) {
+            .admin-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<main class="admin-page">
+
+    <div class="admin-header">
+        <p class="eyebrow">OWNER CONTROL PANEL</p>
+        <h1>Admin <span class="gradient-text">Dashboard</span></h1>
+        <p>Manage your portfolio content, customer accounts and reviews.</p>
+    </div>
+
+    <div id="message" class="message"></div>
+
+    <div class="top-actions">
+        <button class="small-button secondary" onclick="logout()">Log out</button>
+    </div>
+
+    <div class="admin-tabs">
+        <button class="admin-tab active" data-tab="overview">Overview</button>
+        <button class="admin-tab" data-tab="projects">Projects</button>
+        <button class="admin-tab" data-tab="experience">Experience</button>
+        <button class="admin-tab" data-tab="accounts">Accounts</button>
+        <button class="admin-tab" data-tab="reviews">Reviews</button>
+    </div>
+
+    <!-- OVERVIEW -->
+    <section id="overview" class="admin-panel active">
+
+        <div class="admin-grid">
+            <div class="admin-card">
+                <h3>Projects</h3>
+                <div class="admin-stat" id="statProjects">0</div>
+            </div>
+
+            <div class="admin-card">
+                <h3>Experience</h3>
+                <div class="admin-stat" id="statExperience">0</div>
+            </div>
+
+            <div class="admin-card">
+                <h3>Customer Accounts</h3>
+                <div class="admin-stat" id="statAccounts">0</div>
+            </div>
+
+            <div class="admin-card">
+                <h3>Pending Reviews</h3>
+                <div class="admin-stat" id="statReviews">0</div>
+            </div>
+        </div>
+
+        <div class="admin-card">
+            <h2>Welcome back 👋</h2>
+            <p>
+                This dashboard is connected directly to your Cloudflare Worker
+                and D1 database.
+            </p>
+        </div>
+
+    </section>
+
+    <!-- PROJECTS -->
+    <section id="projects" class="admin-panel">
+
+        <div class="admin-card">
+
+            <h2 id="projectFormTitle">Add Project</h2>
+
+            <form id="projectForm" class="admin-form">
+
+                <input
+                    id="projectId"
+                    type="hidden"
+                >
+
+                <input
+                    id="projectTitle"
+                    placeholder="Project title"
+                    required
+                >
+
+                <textarea
+                    id="projectDescription"
+                    placeholder="Project description"
+                    required
+                ></textarea>
+
+                <input
+                    id="projectCategory"
+                    placeholder="Category e.g. Minecraft, Roblox, Web"
+                    required
+                >
+
+                <input
+                    id="projectOrder"
+                    type="number"
+                    value="0"
+                    placeholder="Sort order"
+                >
+
+                <label class="checkbox-row">
+                    <input id="projectFeatured" type="checkbox">
+                    Featured project
+                </label>
+
+                <div class="admin-actions">
+                    <button class="small-button" type="submit">
+                        Save Project
+                    </button>
+
+                    <button
+                        class="small-button secondary"
+                        type="button"
+                        onclick="resetProjectForm()"
+                    >
+                        Cancel
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
+
+        <div class="admin-card">
+            <h2>Projects</h2>
+            <div id="projectList">Loading...</div>
+        </div>
+
+    </section>
+
+    <!-- EXPERIENCE -->
+    <section id="experience" class="admin-panel">
+
+        <div class="admin-card">
+
+            <h2 id="experienceFormTitle">Add Experience</h2>
+
+            <form id="experienceForm" class="admin-form">
+
+                <input
+                    id="experienceId"
+                    type="hidden"
+                >
+
+                <input
+                    id="experienceOrganization"
+                    placeholder="Organization"
+                    required
+                >
+
+                <input
+                    id="experienceRole"
+                    placeholder="Role"
+                    required
+                >
+
+                <select id="experienceCategory" required>
+                    <option value="senior">Senior Leadership</option>
+                    <option value="high">High Ranking</option>
+                    <option value="middle">Management</option>
+                    <option value="entry">Entry Level</option>
+                </select>
+
+                <input
+                    id="experienceOrder"
+                    type="number"
+                    value="0"
+                    placeholder="Sort order"
+                >
+
+                <div class="admin-actions">
+
+                    <button class="small-button" type="submit">
+                        Save Experience
+                    </button>
+
+                    <button
+                        class="small-button secondary"
+                        type="button"
+                        onclick="resetExperienceForm()"
+                    >
+                        Cancel
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+        <div class="admin-card">
+            <h2>Experience</h2>
+            <div id="experienceList">Loading...</div>
+        </div>
+
+    </section>
+
+    <!-- ACCOUNTS -->
+    <section id="accounts" class="admin-panel">
+
+        <div class="admin-card">
+
+            <h2>Create Customer Account</h2>
+
+            <form id="accountForm" class="admin-form">
+
+                <input
+                    id="accountName"
+                    placeholder="Customer display name"
+                    required
+                >
+
+                <input
+                    id="accountEmail"
+                    type="email"
+                    placeholder="Customer email"
+                    required
+                >
+
+                <input
+                    id="accountPassword"
+                    type="password"
+                    minlength="12"
+                    placeholder="Temporary password (12+ characters)"
+                    required
+                >
+
+                <button class="small-button" type="submit">
+                    Create Account
+                </button>
+
+            </form>
+
+        </div>
+
+        <div class="admin-card">
+            <h2>Customer Accounts</h2>
+            <div id="accountList">Loading...</div>
+        </div>
+
+    </section>
+
+    <!-- REVIEWS -->
+    <section id="reviews" class="admin-panel">
+
+        <div class="admin-card">
+            <h2>Customer Reviews</h2>
+            <div id="reviewList">Loading...</div>
+        </div>
+
+    </section>
+
+</main>
+
+<script>
+
+const API =
+    "https://adan-portfolio-api.adanfuau1.workers.dev";
+
+let projects = [];
+let experience = [];
+let accounts = [];
+let reviews = [];
+
+function escapeHTML(value) {
+    return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+function showMessage(text, type = "success") {
+
+    const element =
+        document.getElementById("message");
+
+    element.textContent = text;
+    element.className =
+        `message show ${type}`;
+
+    setTimeout(() => {
+        element.className = "message";
+    }, 4000);
+}
+
+async function apiRequest(
+    path,
+    options = {}
+) {
+
+    const response = await fetch(
+        API + path,
+        {
+            credentials: "include",
+            ...options,
+            headers: {
+                "Content-Type": "application/json",
+                ...(options.headers || {})
+            }
+        }
+    );
+
+    let data = {};
+
+    try {
+        data = await response.json();
+    } catch {}
+
+    if (!response.ok) {
+
+        throw new Error(
+            data.error ||
+            `Request failed (${response.status})`
+        );
+    }
+
+    return data;
+}
+
+async function checkOwner() {
+
+    try {
+
+        const data =
+            await apiRequest("/auth/me");
+
+        if (
+            !data.authenticated ||
+            !data.account ||
+            data.account.role !== "owner"
+        ) {
+            window.location.href =
+                "portal.html";
+            return false;
+        }
+
+        return true;
+
+    } catch (error) {
+
+        console.error(error);
+
+        window.location.href =
+            "portal.html";
+
+        return false;
+    }
+}
+
+/* ---------------- TABS ---------------- */
+
+document
+    .querySelectorAll(".admin-tab")
+    .forEach(button => {
+
+        button.addEventListener("click", () => {
+
+            document
+                .querySelectorAll(".admin-tab")
+                .forEach(item =>
+                    item.classList.remove("active")
+                );
+
+            document
+                .querySelectorAll(".admin-panel")
+                .forEach(panel =>
+                    panel.classList.remove("active")
+                );
+
+            button.classList.add("active");
+
+            document
+                .getElementById(button.dataset.tab)
+                .classList.add("active");
+
+        });
+
+    });
+
+/* ---------------- PROJECTS ---------------- */
+
+async function loadProjects() {
+
+    const data =
+        await apiRequest("/projects");
+
+    projects =
+        data.projects || [];
+
+    document.getElementById("statProjects")
+        .textContent = projects.length;
+
+    renderProjects();
+}
+
+function renderProjects() {
+
+    const list =
+        document.getElementById("projectList");
+
+    if (!projects.length) {
+
+        list.innerHTML =
+            "<p>No projects yet.</p>";
+
+        return;
+    }
+
+    list.innerHTML =
+        projects
+            .sort((a, b) =>
+                (a.sort_order || 0) -
+                (b.sort_order || 0)
+            )
+            .map(project => `
+
+                <div class="admin-item">
+
+                    <div class="admin-item-info">
+
+                        <h3>
+                            ${escapeHTML(project.title)}
+                            ${project.featured
+                                ? " ⭐"
+                                : ""}
+                        </h3>
+
+                        <p>
+                            ${escapeHTML(project.description)}
+                        </p>
+
+                        <small>
+                            ${escapeHTML(project.category)}
+                            · Order ${project.sort_order || 0}
+                        </small>
+
+                    </div>
+
+                    <div class="admin-actions">
+
+                        <button
+                            class="small-button"
+                            onclick="editProject(${project.id})"
+                        >
+                            Edit
+                        </button>
+
+                        <button
+                            class="small-button danger"
+                            onclick="deleteProject(${project.id})"
+                        >
+                            Delete
+                        </button>
+
+                    </div>
+
+                </div>
+
+            `)
+            .join("");
+}
+
+document
+    .getElementById("projectForm")
+    .addEventListener("submit", async event => {
+
+        event.preventDefault();
+
+        const id =
+            document.getElementById("projectId").value;
+
+        const body = {
+
+            title:
+                document.getElementById("projectTitle").value,
+
+            description:
+                document.getElementById("projectDescription").value,
+
+            category:
+                document.getElementById("projectCategory").value,
+
+            featured:
+                document.getElementById("projectFeatured").checked,
+
+            sort_order:
+                Number(
+                    document.getElementById("projectOrder").value
+                ) || 0
+        };
+
+        try {
+
+            if (id) {
+
+                await apiRequest(
+                    `/admin/projects/${id}`,
+                    {
+                        method: "PUT",
+                        body: JSON.stringify(body)
+                    }
+                );
+
+                showMessage("Project updated! ✅");
+
+            } else {
+
+                await apiRequest(
+                    "/admin/projects",
+                    {
+                        method: "POST",
+                        body: JSON.stringify(body)
+                    }
+                );
+
+                showMessage("Project created! 🚀");
+            }
+
+            resetProjectForm();
+
+            await loadProjects();
+
+        } catch (error) {
+
+            showMessage(
+                error.message,
+                "error"
+            );
+        }
+
+    });
+
+function editProject(id) {
+
+    const project =
+        projects.find(item => item.id === id);
+
+    if (!project) return;
+
+    document.getElementById("projectId")
+        .value = project.id;
+
+    document.getElementById("projectTitle")
+        .value = project.title;
+
+    document.getElementById("projectDescription")
+        .value = project.description;
+
+    document.getElementById("projectCategory")
+        .value = project.category;
+
+    document.getElementById("projectOrder")
+        .value = project.sort_order || 0;
+
+    document.getElementById("projectFeatured")
+        .checked = Boolean(project.featured);
+
+    document.getElementById("projectFormTitle")
+        .textContent = "Edit Project";
+
+    document
+        .getElementById("projectTitle")
+        .focus();
+
+    document
+        .getElementById("projects")
+        .scrollIntoView({
+            behavior: "smooth"
+        });
+}
+
+function resetProjectForm() {
+
+    document.getElementById("projectForm")
+        .reset();
+
+    document.getElementById("projectId")
+        .value = "";
+
+    document.getElementById("projectOrder")
+        .value = 0;
+
+    document.getElementById("projectFormTitle")
+        .textContent = "Add Project";
+}
+
+async function deleteProject(id) {
+
+    const project =
+        projects.find(item => item.id === id);
+
+    if (!project) return;
+
+    if (
+        !confirm(
+            `Delete "${project.title}"?`
+        )
+    ) return;
+
+    try {
+
+        await apiRequest(
+            `/admin/projects/${id}`,
+            {
+                method: "DELETE"
+            }
+        );
+
+        showMessage("Project deleted.");
+
+        await loadProjects();
+
+    } catch (error) {
+
+        showMessage(
+            error.message,
+            "error"
+        );
+    }
+}
+
+/* ---------------- EXPERIENCE ---------------- */
+
+async function loadExperience() {
+
+    const data =
+        await apiRequest("/experience");
+
+    experience =
+        data.experience || [];
+
+    document.getElementById("statExperience")
+        .textContent = experience.length;
+
+    renderExperience();
+}
+
+function renderExperience() {
+
+    const list =
+        document.getElementById("experienceList");
+
+    if (!experience.length) {
+
+        list.innerHTML =
+            "<p>No experience entries yet.</p>";
+
+        return;
+    }
+
+    const categoryNames = {
+        senior: "Senior Leadership",
+        high: "High Ranking",
+        middle: "Management",
+        entry: "Entry Level"
+    };
+
+    list.innerHTML =
+        experience
+            .sort((a, b) =>
+                (a.sort_order || 0) -
+                (b.sort_order || 0)
+            )
+            .map(item => `
+
+                <div class="admin-item">
+
+                    <div class="admin-item-info">
+
+                        <h3>
+                            ${escapeHTML(item.organization)}
+                        </h3>
+
+                        <p>
+                            ${escapeHTML(item.role)}
+                        </p>
+
+                        <small>
+                            ${escapeHTML(
+                                categoryNames[item.category] ||
+                                item.category
+                            )}
+                            · Order ${item.sort_order || 0}
+                        </small>
+
+                    </div>
+
+                    <div class="admin-actions">
+
+                        <button
+                            class="small-button"
+                            onclick="editExperience(${item.id})"
+                        >
+                            Edit
+                        </button>
+
+                        <button
+                            class="small-button danger"
+                            onclick="deleteExperience(${item.id})"
+                        >
+                            Delete
+                        </button>
+
+                    </div>
+
+                </div>
+
+            `)
+            .join("");
+}
+
+document
+    .getElementById("experienceForm")
+    .addEventListener("submit", async event => {
+
+        event.preventDefault();
+
+        const id =
+            document.getElementById("experienceId").value;
+
+        const body = {
+
+            organization:
+                document.getElementById(
+                    "experienceOrganization"
+                ).value,
+
+            role:
+                document.getElementById(
+                    "experienceRole"
+                ).value,
+
+            category:
+                document.getElementById(
+                    "experienceCategory"
+                ).value,
+
+            sort_order:
+                Number(
+                    document.getElementById(
+                        "experienceOrder"
+                    ).value
+                ) || 0
+        };
+
+        try {
+
+            if (id) {
+
+                await apiRequest(
+                    `/admin/experience/${id}`,
+                    {
+                        method: "PUT",
+                        body: JSON.stringify(body)
+                    }
+                );
+
+                showMessage(
+                    "Experience updated! ✅"
+                );
+
+            } else {
+
+                await apiRequest(
+                    "/admin/experience",
+                    {
+                        method: "POST",
+                        body: JSON.stringify(body)
+                    }
+                );
+
+                showMessage(
+                    "Experience created! 🚀"
+                );
+            }
+
+            resetExperienceForm();
+
+            await loadExperience();
+
+        } catch (error) {
+
+            showMessage(
+                error.message,
+                "error"
+            );
+        }
+
+    });
+
+function editExperience(id) {
+
+    const item =
+        experience.find(entry =>
+            entry.id === id
+        );
+
+    if (!item) return;
+
+    document.getElementById("experienceId")
+        .value = item.id;
+
+    document.getElementById(
+        "experienceOrganization"
+    ).value = item.organization;
+
+    document.getElementById(
+        "experienceRole"
+    ).value = item.role;
+
+    document.getElementById(
+        "experienceCategory"
+    ).value = item.category;
+
+    document.getElementById(
+        "experienceOrder"
+    ).value = item.sort_order || 0;
+
+    document.getElementById(
+        "experienceFormTitle"
+    ).textContent = "Edit Experience";
+
+    document
+        .getElementById("experience")
+        .scrollIntoView({
+            behavior: "smooth"
+        });
+}
+
+function resetExperienceForm() {
+
+    document
+        .getElementById("experienceForm")
+        .reset();
+
+    document.getElementById("experienceId")
+        .value = "";
+
+    document.getElementById("experienceOrder")
+        .value = 0;
+
+    document.getElementById(
+        "experienceFormTitle"
+    ).textContent = "Add Experience";
+}
+
+async function deleteExperience(id) {
+
+    const item =
+        experience.find(entry =>
+            entry.id === id
+        );
+
+    if (!item) return;
+
+    if (
+        !confirm(
+            `Delete "${item.organization} — ${item.role}"?`
+        )
+    ) return;
+
+    try {
+
+        await apiRequest(
+            `/admin/experience/${id}`,
+            {
+                method: "DELETE"
+            }
+        );
+
+        showMessage(
+            "Experience deleted."
+        );
+
+        await loadExperience();
+
+    } catch (error) {
+
+        showMessage(
+            error.message,
+            "error"
+        );
+    }
+}
+
+/* ---------------- ACCOUNTS ---------------- */
+
+async function loadAccounts() {
+
+    const data =
+        await apiRequest(
+            "/admin/accounts"
+        );
+
+    accounts =
+        data.accounts || [];
+
+    document.getElementById("statAccounts")
+        .textContent = accounts.length;
+
+    renderAccounts();
+}
+
+function renderAccounts() {
+
+    const list =
+        document.getElementById("accountList");
+
+    if (!accounts.length) {
+
+        list.innerHTML =
+            "<p>No customer accounts yet.</p>";
+
+        return;
+    }
+
+    list.innerHTML =
+        accounts.map(account => `
+
+            <div class="admin-item">
+
+                <div class="admin-item-info">
+
+                    <h3>
+                        ${escapeHTML(
+                            account.display_name
+                        )}
+                    </h3>
+
+                    <p>
+                        ${escapeHTML(
+                            account.email
+                        )}
+                    </p>
+
+                    <small>
+                        ${escapeHTML(
+                            account.role
+                        )}
+                    </small>
+
+                </div>
+
+                ${
+                    account.role !== "owner"
+                    ? `
+                        <button
+                            class="small-button danger"
+                            onclick="deleteAccount(${account.id})"
+                        >
+                            Delete
+                        </button>
+                    `
+                    : ""
+                }
+
+            </div>
+
+        `).join("");
+}
+
+document
+    .getElementById("accountForm")
+    .addEventListener("submit", async event => {
+
+        event.preventDefault();
+
+        const body = {
+
+            display_name:
+                document.getElementById(
+                    "accountName"
+                ).value,
+
+            email:
+                document.getElementById(
+                    "accountEmail"
+                ).value,
+
+            password:
+                document.getElementById(
+                    "accountPassword"
+                ).value
+
+        };
+
+        try {
+
+            await apiRequest(
+                "/admin/accounts",
+                {
+                    method: "POST",
+                    body: JSON.stringify(body)
+                }
+            );
+
+            event.target.reset();
+
+            showMessage(
+                "Customer account created! ✅"
+            );
+
+            await loadAccounts();
+
+        } catch (error) {
+
+            showMessage(
+                error.message,
+                "error"
+            );
+        }
+
+    });
+
+async function deleteAccount(id) {
+
+    if (
+        !confirm(
+            "Delete this customer account?"
+        )
+    ) return;
+
+    try {
+
+        await apiRequest(
+            `/admin/accounts/${id}`,
+            {
+                method: "DELETE"
+            }
+        );
+
+        showMessage(
+            "Account deleted."
+        );
+
+        await loadAccounts();
+
+    } catch (error) {
+
+        showMessage(
+            error.message,
+            "error"
+        );
+    }
+}
+
+/* ---------------- REVIEWS ---------------- */
+
+async function loadReviews() {
+
+    const data =
+        await apiRequest(
+            "/admin/reviews"
+        );
+
+    reviews =
+        data.reviews || [];
+
+    const pending =
+        reviews.filter(
+            review => !review.approved
+        ).length;
+
+    document.getElementById("statReviews")
+        .textContent = pending;
+
+    renderReviews();
+}
+
+function renderReviews() {
+
+    const list =
+        document.getElementById("reviewList");
+
+    if (!reviews.length) {
+
+        list.innerHTML =
+            "<p>No reviews yet.</p>";
+
+        return;
+    }
+
+    list.innerHTML =
+        reviews.map(review => `
+
+            <div class="admin-item">
+
+                <div class="admin-item-info">
+
+                    <h3>
+                        ${escapeHTML(
+                            review.display_name ||
+                            review.email ||
+                            "Customer"
+                        )}
+                        · ${review.rating}/5 ⭐
+                    </h3>
+
+                    <p>
+                        ${escapeHTML(
+                            review.review_text
+                        )}
+                    </p>
+
+                    <small>
+                        ${
+                            review.approved
+                                ? "Approved"
+                                : "Pending approval"
+                        }
+                    </small>
+
+                </div>
+
+                <div class="admin-actions">
+
+                    ${
+                        !review.approved
+                        ? `
+                            <button
+                                class="small-button"
+                                onclick="approveReview(${review.id})"
+                            >
+                                Approve
+                            </button>
+                        `
+                        : ""
+                    }
+
+                    <button
+                        class="small-button danger"
+                        onclick="deleteReview(${review.id})"
+                    >
+                        Delete
+                    </button>
+
+                </div>
+
+            </div>
+
+        `).join("");
+}
+
+async function approveReview(id) {
+
+    try {
+
+        await apiRequest(
+            `/admin/reviews/${id}/approve`,
+            {
+                method: "POST"
+            }
+        );
+
+        showMessage(
+            "Review approved! ⭐"
+        );
+
+        await loadReviews();
+
+    } catch (error) {
+
+        showMessage(
+            error.message,
+            "error"
+        );
+    }
+}
+
+async function deleteReview(id) {
+
+    if (
+        !confirm(
+            "Delete this review?"
+        )
+    ) return;
+
+    try {
+
+        await apiRequest(
+            `/admin/reviews/${id}`,
+            {
+                method: "DELETE"
+            }
+        );
+
+        showMessage(
+            "Review deleted."
+        );
+
+        await loadReviews();
+
+    } catch (error) {
+
+        showMessage(
+            error.message,
+            "error"
+        );
+    }
+}
+
+/* ---------------- LOGOUT ---------------- */
+
+async function logout() {
+
+    try {
+
+        await apiRequest(
+            "/auth/logout",
+            {
+                method: "POST"
+            }
+        );
+
+    } finally {
+
+        window.location.href =
+            "portal.html";
+    }
+}
+
+/* ---------------- START ---------------- */
+
+async function init() {
+
+    const owner =
+        await checkOwner();
+
+    if (!owner) return;
+
+    try {
+
+        await Promise.all([
+            loadProjects(),
+            loadExperience(),
+            loadAccounts(),
+            loadReviews()
+        ]);
+
+    } catch (error) {
+
+        console.error(error);
+
+        showMessage(
+            error.message,
+            "error"
+        );
+    }
+}
+
+init();
+
+</script>
+
+</body>
+</html>

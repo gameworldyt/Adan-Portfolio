@@ -1,0 +1,2620 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Owner Dashboard | Adan</title>
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background:
+                radial-gradient(circle at 10% 10%, rgba(37,99,235,.15), transparent 35%),
+                radial-gradient(circle at 90% 20%, rgba(56,189,248,.10), transparent 35%),
+                #030712;
+        }
+
+        .owner-page {
+            min-height: 100vh;
+            padding: 100px 4% 50px;
+        }
+
+        .owner-shell {
+            max-width: 1500px;
+            margin: auto;
+        }
+
+        .owner-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .owner-header h1 {
+            font-size: clamp(2rem, 5vw, 4rem);
+            margin: 0;
+        }
+
+        .owner-header p {
+            color: #94a3b8;
+            margin-top: 8px;
+        }
+
+        .owner-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .owner-button {
+            border: 0;
+            border-radius: 12px;
+            padding: 12px 18px;
+            color: white;
+            background: linear-gradient(135deg,#2563eb,#38bdf8);
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+        .owner-button.secondary {
+            background: rgba(37,99,235,.15);
+            border: 1px solid rgba(56,189,248,.3);
+        }
+
+        .owner-button.danger {
+            background: #dc2626;
+        }
+
+        .owner-button.warning {
+            background: #b45309;
+        }
+
+        .owner-button.small {
+            padding: 8px 12px;
+            font-size: .85rem;
+        }
+
+        .owner-tabs {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+            margin-bottom: 25px;
+        }
+
+        .owner-tab {
+            border: 1px solid rgba(148,163,184,.15);
+            background: rgba(8,18,35,.7);
+            color: #cbd5e1;
+            border-radius: 12px;
+            padding: 12px 18px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .owner-tab.active {
+            background: rgba(37,99,235,.3);
+            border-color: rgba(56,189,248,.5);
+            color: white;
+        }
+
+        .owner-section {
+            display: none;
+        }
+
+        .owner-section.active {
+            display: block;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+            margin-bottom: 25px;
+        }
+
+        .stat {
+            padding: 24px;
+            border-radius: 20px;
+            background: rgba(8,18,35,.75);
+            border: 1px solid rgba(56,189,248,.15);
+        }
+
+        .stat strong {
+            display: block;
+            font-size: 2.3rem;
+            color: #38bdf8;
+        }
+
+        .stat span {
+            color: #94a3b8;
+        }
+
+        .owner-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 22px;
+        }
+
+        .owner-card {
+            background: rgba(8,18,35,.78);
+            border: 1px solid rgba(56,189,248,.15);
+            border-radius: 22px;
+            padding: 25px;
+            backdrop-filter: blur(18px);
+        }
+
+        .owner-card.full {
+            grid-column: 1 / -1;
+        }
+
+        .owner-card h2 {
+            margin-top: 0;
+        }
+
+        .owner-card > p {
+            color: #94a3b8;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 14px;
+            margin-top: 20px;
+        }
+
+        .form-grid .full {
+            grid-column: 1 / -1;
+        }
+
+        input,
+        textarea,
+        select {
+            width: 100%;
+            padding: 13px 15px;
+            border-radius: 12px;
+            border: 1px solid rgba(148,163,184,.18);
+            background: rgba(3,7,18,.8);
+            color: white;
+            outline: none;
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            border-color: #38bdf8;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+
+        .list {
+            display: grid;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .list-item {
+            padding: 17px;
+            border-radius: 15px;
+            background: rgba(255,255,255,.035);
+            border: 1px solid rgba(148,163,184,.08);
+        }
+
+        .list-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .list-item h3 {
+            margin: 0 0 5px;
+        }
+
+        .muted {
+            color: #94a3b8;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 9px;
+            border-radius: 999px;
+            background: rgba(37,99,235,.18);
+            color: #7dd3fc;
+            font-size: .8rem;
+            margin-right: 5px;
+        }
+
+        .badge.off {
+            background: rgba(239,68,68,.15);
+            color: #fca5a5;
+        }
+
+        .item-actions {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .experience-controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+
+        .experience-list {
+            max-height: 700px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        .experience-entry {
+            display: grid;
+            grid-template-columns: 55px 1fr auto;
+            gap: 15px;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid rgba(148,163,184,.08);
+        }
+
+        .experience-number {
+            color: #38bdf8;
+            font-weight: 800;
+        }
+
+        .experience-entry h3 {
+            margin: 0;
+        }
+
+        .experience-entry p {
+            margin: 4px 0;
+            color: #94a3b8;
+        }
+
+        .drop-zone {
+            border: 2px dashed rgba(56,189,248,.4);
+            border-radius: 20px;
+            padding: 45px 25px;
+            text-align: center;
+            background: rgba(37,99,235,.05);
+            cursor: pointer;
+            transition: .2s;
+        }
+
+        .drop-zone:hover,
+        .drop-zone.dragging {
+            border-color: #38bdf8;
+            background: rgba(37,99,235,.13);
+        }
+
+        .drop-zone strong {
+            display: block;
+            font-size: 1.2rem;
+            margin-bottom: 8px;
+        }
+
+        .image-preview {
+            display: grid;
+            grid-template-columns: repeat(auto-fill,minmax(170px,1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .image-card {
+            overflow: hidden;
+            border-radius: 15px;
+            background: rgba(255,255,255,.04);
+        }
+
+        .image-card img {
+            width: 100%;
+            height: 140px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .image-card-info {
+            padding: 10px;
+        }
+
+        .image-card-info small {
+            color: #94a3b8;
+            display: block;
+            margin-bottom: 8px;
+            word-break: break-word;
+        }
+
+        .chat-layout {
+            display: grid;
+            grid-template-columns: 330px 1fr;
+            gap: 18px;
+        }
+
+        .conversation-list {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .conversation {
+            padding: 15px;
+            border-radius: 14px;
+            margin-bottom: 8px;
+            background: rgba(255,255,255,.03);
+            border: 1px solid transparent;
+            cursor: pointer;
+        }
+
+        .conversation:hover,
+        .conversation.selected {
+            border-color: rgba(56,189,248,.4);
+            background: rgba(37,99,235,.12);
+        }
+
+        .conversation strong {
+            display: block;
+        }
+
+        .conversation small {
+            color: #64748b;
+        }
+
+        .chat-box {
+            height: 450px;
+            overflow-y: auto;
+            padding: 18px;
+            border-radius: 17px;
+            background: rgba(3,7,18,.7);
+            border: 1px solid rgba(148,163,184,.1);
+        }
+
+        .chat-message {
+            max-width: 78%;
+            padding: 12px 15px;
+            border-radius: 16px;
+            margin-bottom: 12px;
+        }
+
+        .chat-message.owner {
+            margin-left: auto;
+            background: rgba(37,99,235,.25);
+        }
+
+        .chat-message.customer {
+            margin-right: auto;
+            background: rgba(56,189,248,.10);
+        }
+
+        .chat-message small {
+            display: block;
+            color: #64748b;
+            margin-bottom: 4px;
+        }
+
+        .chat-compose {
+            display: flex;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .chat-compose textarea {
+            min-height: 60px;
+        }
+
+        .stars {
+            color: #facc15;
+            letter-spacing: 2px;
+        }
+
+        .notice {
+            padding: 13px 15px;
+            border-radius: 12px;
+            background: rgba(37,99,235,.1);
+            border: 1px solid rgba(56,189,248,.15);
+            color: #bae6fd;
+            margin-bottom: 15px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        @media(max-width: 1000px) {
+            .stats-grid {
+                grid-template-columns: repeat(2,1fr);
+            }
+
+            .chat-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media(max-width: 700px) {
+            .owner-header {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .owner-grid,
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .owner-card.full,
+            .form-grid .full {
+                grid-column: auto;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .experience-entry {
+                grid-template-columns: 35px 1fr;
+            }
+
+            .experience-entry .item-actions {
+                grid-column: 2;
+                justify-content: flex-start;
+            }
+
+            .chat-compose {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header class="navbar">
+    <a href="index.html" class="logo">ADAN<span>.</span></a>
+
+    <nav>
+        <a href="index.html">Portfolio</a>
+        <a href="portal.html">Customer Portal</a>
+    </nav>
+</header>
+
+<main class="owner-page">
+
+<div class="owner-shell">
+
+    <header class="owner-header">
+        <div>
+            <h1>Owner <span class="gradient-text">Dashboard</span></h1>
+            <p>Manage your portfolio, customers, work and messages.</p>
+        </div>
+
+        <div class="owner-actions">
+            <button class="owner-button secondary" onclick="location.href='index.html'">
+                View Portfolio
+            </button>
+
+            <button id="logoutBtn" class="owner-button danger">
+                Sign Out
+            </button>
+        </div>
+    </header>
+
+    <nav class="owner-tabs">
+
+        <button class="owner-tab active" data-tab="overview">
+            📊 Overview
+        </button>
+
+        <button class="owner-tab" data-tab="projects">
+            🚀 Projects
+        </button>
+
+        <button class="owner-tab" data-tab="experience">
+            📚 Experience
+        </button>
+
+        <button class="owner-tab" data-tab="images">
+            🖼️ Images
+        </button>
+
+        <button class="owner-tab" data-tab="customers">
+            👥 Customers
+        </button>
+
+        <button class="owner-tab" data-tab="reviews">
+            ⭐ Reviews
+        </button>
+
+        <button class="owner-tab" data-tab="messages">
+            💬 Messages
+        </button>
+
+    </nav>
+
+    <!-- OVERVIEW -->
+
+    <section id="overview" class="owner-section active">
+
+        <div class="stats-grid">
+
+            <div class="stat">
+                <strong id="statProjects">0</strong>
+                <span>Projects</span>
+            </div>
+
+            <div class="stat">
+                <strong id="statExperience">0</strong>
+                <span>Experience Entries</span>
+            </div>
+
+            <div class="stat">
+                <strong id="statCustomers">0</strong>
+                <span>Customers</span>
+            </div>
+
+            <div class="stat">
+                <strong id="statMessages">0</strong>
+                <span>Conversations</span>
+            </div>
+
+        </div>
+
+        <div class="owner-grid">
+
+            <div class="owner-card full">
+
+                <h2>⚡ Quick Actions</h2>
+
+                <div class="form-actions">
+
+                    <button class="owner-button"
+                        onclick="switchTab('projects')">
+                        Add Project
+                    </button>
+
+                    <button class="owner-button"
+                        onclick="switchTab('experience')">
+                        Add Experience
+                    </button>
+
+                    <button class="owner-button"
+                        onclick="switchTab('images')">
+                        Upload Images
+                    </button>
+
+                    <button class="owner-button"
+                        onclick="switchTab('customers')">
+                        Manage Customers
+                    </button>
+
+                    <button class="owner-button"
+                        onclick="switchTab('messages')">
+                        Open Messages
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- PROJECTS -->
+
+    <section id="projects" class="owner-section">
+
+        <div class="owner-grid">
+
+            <div class="owner-card">
+
+                <h2>🚀 Add / Edit Project</h2>
+
+                <form id="projectForm" class="form-grid">
+
+                    <input id="projectId" type="hidden">
+
+                    <input
+                        id="projectTitle"
+                        placeholder="Project title"
+                        required
+                    >
+
+                    <input
+                        id="projectCategory"
+                        placeholder="Category"
+                        required
+                    >
+
+                    <textarea
+                        id="projectDescription"
+                        class="full"
+                        placeholder="Project description"
+                        required
+                    ></textarea>
+
+                    <label>
+                        <input
+                            id="projectFeatured"
+                            type="checkbox"
+                        >
+                        Featured project
+                    </label>
+
+                    <input
+                        id="projectOrder"
+                        type="number"
+                        placeholder="Sort order"
+                        value="0"
+                    >
+
+                </form>
+
+                <div class="form-actions">
+
+                    <button
+                        class="owner-button"
+                        onclick="saveProject()">
+                        Save Project
+                    </button>
+
+                    <button
+                        class="owner-button secondary"
+                        onclick="clearProjectForm()">
+                        Clear
+                    </button>
+
+                </div>
+
+            </div>
+
+            <div class="owner-card">
+
+                <h2>📦 Existing Projects</h2>
+
+                <div id="projectList" class="list">
+                    Loading...
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- EXPERIENCE -->
+
+    <section id="experience" class="owner-section">
+
+        <div class="owner-grid">
+
+            <div class="owner-card">
+
+                <h2>➕ Add Experience</h2>
+
+                <p>
+                    Add as many roles as you want. Existing experience
+                    will remain untouched unless you edit or delete it.
+                </p>
+
+                <form id="experienceForm" class="form-grid">
+
+                    <input id="experienceId" type="hidden">
+
+                    <input
+                        id="experienceOrganization"
+                        placeholder="Organisation"
+                        required
+                    >
+
+                    <input
+                        id="experienceRole"
+                        placeholder="Role"
+                        required
+                    >
+
+                    <select id="experienceCategory">
+
+                        <option value="senior">
+                            Senior Leadership
+                        </option>
+
+                        <option value="high">
+                            High Ranking
+                        </option>
+
+                        <option value="middle">
+                            Management
+                        </option>
+
+                        <option value="entry">
+                            Entry-Level
+                        </option>
+
+                    </select>
+
+                    <input
+                        id="experienceOrder"
+                        type="number"
+                        placeholder="Sort order"
+                        value="0"
+                    >
+
+                </form>
+
+                <div class="form-actions">
+
+                    <button
+                        class="owner-button"
+                        onclick="saveExperience()">
+                        Save Experience
+                    </button>
+
+                    <button
+                        class="owner-button secondary"
+                        onclick="clearExperienceForm()">
+                        Clear
+                    </button>
+
+                </div>
+
+            </div>
+
+            <div class="owner-card">
+
+                <h2>🔎 Experience Filter</h2>
+
+                <div class="experience-controls">
+
+                    <select id="experienceFilter"
+                        onchange="renderExperience()">
+
+                        <option value="all">All Experience</option>
+                        <option value="senior">Senior Leadership</option>
+                        <option value="high">High Ranking</option>
+                        <option value="middle">Management</option>
+                        <option value="entry">Entry-Level</option>
+
+                    </select>
+
+                </div>
+
+                <div id="experienceCount" class="notice">
+                    Loading experience...
+                </div>
+
+            </div>
+
+            <div class="owner-card full">
+
+                <h2>📚 Experience Library</h2>
+
+                <div id="experienceList"
+                     class="experience-list">
+                    Loading...
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- IMAGES -->
+
+    <section id="images" class="owner-section">
+
+        <div class="owner-grid">
+
+            <div class="owner-card">
+
+                <h2>🖼️ Upload Image</h2>
+
+                <p>
+                    Drag an image here or click the box.
+                    Images are stored in the GitHub repository.
+                </p>
+
+                <div id="dropZone" class="drop-zone">
+
+                    <strong>📁 Drop image here</strong>
+
+                    <span class="muted">
+                        or click to choose a file
+                    </span>
+
+                    <input
+                        id="imageInput"
+                        type="file"
+                        accept="image/*"
+                        hidden
+                    >
+
+                </div>
+
+                <div class="form-grid">
+
+                    <input
+                        id="imageCategory"
+                        placeholder="Category (e.g. project)"
+                        value="general"
+                    >
+
+                    <input
+                        id="imageProjectId"
+                        type="number"
+                        placeholder="Project ID (optional)"
+                    >
+
+                    <input
+                        id="imageExperienceId"
+                        type="number"
+                        placeholder="Experience ID (optional)"
+                    >
+
+                </div>
+
+                <div id="uploadStatus" class="notice hidden">
+                    Uploading...
+                </div>
+
+            </div>
+
+            <div class="owner-card">
+
+                <h2>💡 Image Storage</h2>
+
+                <p>
+                    Images are kept outside D1. D1 stores the image
+                    metadata while GitHub stores the actual file.
+                </p>
+
+                <p>
+                    This keeps your database lightweight and avoids
+                    needing paid object storage.
+                </p>
+
+            </div>
+
+            <div class="owner-card full">
+
+                <h2>🗂️ Image Library</h2>
+
+                <div id="imageLibrary" class="image-preview">
+                    Loading...
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- CUSTOMERS -->
+
+    <section id="customers" class="owner-section">
+
+        <div class="owner-grid">
+
+            <div class="owner-card">
+
+                <h2>👤 Create Customer Account</h2>
+
+                <form id="customerForm" class="form-grid">
+
+                    <input
+                        id="customerName"
+                        placeholder="Display name"
+                        required
+                    >
+
+                    <input
+                        id="customerEmail"
+                        type="email"
+                        placeholder="Email"
+                        required
+                    >
+
+                    <input
+                        id="customerPassword"
+                        type="password"
+                        placeholder="Temporary password"
+                        minlength="12"
+                        required
+                    >
+
+                </form>
+
+                <div class="form-actions">
+
+                    <button
+                        class="owner-button"
+                        onclick="createCustomer()">
+                        Create Account
+                    </button>
+
+                </div>
+
+                <p class="muted">
+                    Give the customer their login details securely.
+                </p>
+
+            </div>
+
+            <div class="owner-card">
+
+                <h2>🛡️ Account Management</h2>
+
+                <p>
+                    Termination disables the account and removes its
+                    active sessions. You can restore it later.
+                </p>
+
+            </div>
+
+            <div class="owner-card full">
+
+                <h2>👥 Customers</h2>
+
+                <div id="customerList" class="list">
+                    Loading...
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- REVIEWS -->
+
+    <section id="reviews" class="owner-section">
+
+        <div class="owner-grid">
+
+            <div class="owner-card">
+
+                <h2>⭐ Write Customer Review</h2>
+
+                <p>
+                    You can create a review on behalf of a customer.
+                </p>
+
+                <form id="ownerReviewForm" class="form-grid">
+
+                    <select id="ownerReviewCustomer" class="full">
+                        <option value="">Select customer</option>
+                    </select>
+
+                    <select id="ownerReviewRating">
+
+                        <option value="5">★★★★★ — 5</option>
+                        <option value="4">★★★★ — 4</option>
+                        <option value="3">★★★ — 3</option>
+                        <option value="2">★★ — 2</option>
+                        <option value="1">★ — 1</option>
+
+                    </select>
+
+                    <textarea
+                        id="ownerReviewText"
+                        class="full"
+                        placeholder="Review text"
+                        maxlength="2000"
+                        required
+                    ></textarea>
+
+                </form>
+
+                <div class="form-actions">
+
+                    <button
+                        class="owner-button"
+                        onclick="createReview()">
+                        Publish Review
+                    </button>
+
+                </div>
+
+            </div>
+
+            <div class="owner-card">
+
+                <h2>ℹ️ Review Workflow</h2>
+
+                <p>
+                    Customer-submitted reviews remain pending until
+                    you approve them.
+                </p>
+
+                <p>
+                    Reviews created here are immediately approved.
+                </p>
+
+            </div>
+
+            <div class="owner-card full">
+
+                <h2>⭐ Review Management</h2>
+
+                <div id="reviewList" class="list">
+                    Loading...
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- MESSAGES -->
+
+    <section id="messages" class="owner-section">
+
+        <div class="owner-card">
+
+            <h2>💬 Customer Messages</h2>
+
+            <div class="notice">
+                Guest account requests and customer messages appear here.
+                New customer/guest messages are also sent to your Discord DM.
+            </div>
+
+            <div class="chat-layout">
+
+                <div>
+
+                    <h3>Conversations</h3>
+
+                    <div
+                        id="conversationList"
+                        class="conversation-list">
+                        Loading...
+                    </div>
+
+                </div>
+
+                <div>
+
+                    <h3 id="selectedConversationTitle">
+                        Select a conversation
+                    </h3>
+
+                    <div
+                        id="ownerChat"
+                        class="chat-box">
+                    </div>
+
+                    <form id="ownerChatForm"
+                          class="chat-compose">
+
+                        <textarea
+                            id="ownerChatInput"
+                            placeholder="Write a reply..."
+                            maxlength="3000"
+                            required>
+                        </textarea>
+
+                        <button class="owner-button">
+                            Send
+                        </button>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</div>
+
+</main>
+
+<script>
+
+const API =
+    "https://adan-portfolio-api.adanfuau1.workers.dev";
+
+const $ = id =>
+    document.getElementById(id);
+
+let projects = [];
+let experience = [];
+let customers = [];
+let reviews = [];
+let images = [];
+let conversations = [];
+
+let selectedConversation = null;
+
+function escapeHtml(value) {
+
+    return String(value ?? "")
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+}
+
+async function api(path, options = {}) {
+
+    const response = await fetch(API + path, {
+
+        credentials: "include",
+
+        ...options,
+
+        headers: {
+
+            "Content-Type": "application/json",
+
+            ...(options.headers || {})
+        }
+    });
+
+    let data = {};
+
+    try {
+        data = await response.json();
+    } catch {}
+
+    if (!response.ok) {
+
+        throw new Error(
+            data.error || "Request failed"
+        );
+    }
+
+    return data;
+}
+
+/* AUTH */
+
+async function checkAuth() {
+
+    try {
+
+        const data =
+            await api("/auth/me");
+
+        if (!data.account ||
+            data.account.role !== "owner") {
+
+            location.href = "portal.html";
+            return;
+        }
+
+        await loadEverything();
+
+    } catch {
+
+        location.href = "portal.html";
+    }
+}
+
+/* TABS */
+
+document.querySelectorAll(".owner-tab")
+    .forEach(button => {
+
+        button.addEventListener("click", () => {
+
+            switchTab(
+                button.dataset.tab
+            );
+
+        });
+
+    });
+
+function switchTab(tab) {
+
+    document.querySelectorAll(".owner-tab")
+        .forEach(button => {
+
+            button.classList.toggle(
+                "active",
+                button.dataset.tab === tab
+            );
+
+        });
+
+    document.querySelectorAll(".owner-section")
+        .forEach(section => {
+
+            section.classList.toggle(
+                "active",
+                section.id === tab
+            );
+
+        });
+
+}
+
+/* PROJECTS */
+
+async function loadProjects() {
+
+    const data =
+        await api("/projects");
+
+    projects =
+        data.projects || [];
+
+    renderProjects();
+
+    $("statProjects").textContent =
+        projects.length;
+}
+
+function renderProjects() {
+
+    $("projectList").innerHTML =
+        projects.length
+
+        ? projects.map(project => `
+
+            <div class="list-item">
+
+                <div class="list-item-header">
+
+                    <div>
+
+                        <h3>
+                            ${escapeHtml(project.title)}
+                        </h3>
+
+                        <span class="badge">
+                            ${escapeHtml(project.category)}
+                        </span>
+
+                        ${
+                            project.featured
+                            ? `<span class="badge">
+                                Featured
+                              </span>`
+                            : ""
+                        }
+
+                        <p class="muted">
+                            ${escapeHtml(project.description)}
+                        </p>
+
+                    </div>
+
+                    <div class="item-actions">
+
+                        <button
+                            class="owner-button small secondary"
+                            onclick="editProject(${project.id})">
+                            Edit
+                        </button>
+
+                        <button
+                            class="owner-button small danger"
+                            onclick="deleteProject(${project.id})">
+                            Delete
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        `).join("")
+
+        : "<p class='muted'>No projects yet.</p>";
+}
+
+async function saveProject() {
+
+    try {
+
+        const id =
+            $("projectId").value;
+
+        const body = {
+
+            title:
+                $("projectTitle").value.trim(),
+
+            description:
+                $("projectDescription").value.trim(),
+
+            category:
+                $("projectCategory").value.trim(),
+
+            featured:
+                $("projectFeatured").checked,
+
+            sort_order:
+                Number($("projectOrder").value) || 0
+        };
+
+        if (!body.title ||
+            !body.description ||
+            !body.category) {
+
+            alert("Fill in all project fields.");
+            return;
+        }
+
+        if (id) {
+
+            await api(
+                `/admin/projects/${id}`,
+                {
+                    method: "PUT",
+                    body: JSON.stringify(body)
+                }
+            );
+
+        } else {
+
+            await api(
+                "/admin/projects",
+                {
+                    method: "POST",
+                    body: JSON.stringify(body)
+                }
+            );
+
+        }
+
+        clearProjectForm();
+
+        await loadProjects();
+
+    } catch (error) {
+
+        alert(error.message);
+    }
+}
+
+function editProject(id) {
+
+    const project =
+        projects.find(
+            item => item.id === id
+        );
+
+    if (!project) return;
+
+    $("projectId").value =
+        project.id;
+
+    $("projectTitle").value =
+        project.title;
+
+    $("projectDescription").value =
+        project.description;
+
+    $("projectCategory").value =
+        project.category;
+
+    $("projectFeatured").checked =
+        Boolean(project.featured);
+
+    $("projectOrder").value =
+        project.sort_order || 0;
+
+    switchTab("projects");
+}
+
+function clearProjectForm() {
+
+    $("projectId").value = "";
+    $("projectTitle").value = "";
+    $("projectDescription").value = "";
+    $("projectCategory").value = "";
+    $("projectFeatured").checked = false;
+    $("projectOrder").value = 0;
+}
+
+async function deleteProject(id) {
+
+    if (!confirm("Delete this project?")) return;
+
+    try {
+
+        await api(
+            `/admin/projects/${id}`,
+            {
+                method: "DELETE"
+            }
+        );
+
+        await loadProjects();
+
+    } catch (error) {
+
+        alert(error.message);
+    }
+}
+
+/* EXPERIENCE */
+
+async function loadExperience() {
+
+    const data =
+        await api("/experience");
+
+    experience =
+        data.experience || [];
+
+    renderExperience();
+
+    $("statExperience").textContent =
+        experience.length;
+}
+
+function renderExperience() {
+
+    const filter =
+        $("experienceFilter").value;
+
+    const filtered =
+        filter === "all"
+            ? experience
+            : experience.filter(
+                item => item.category === filter
+            );
+
+    $("experienceCount").textContent =
+        `${filtered.length} shown • ${experience.length} total experience entries`;
+
+    $("experienceList").innerHTML =
+        filtered.map((item,index) => `
+
+            <div class="experience-entry">
+
+                <div class="experience-number">
+                    #${index + 1}
+                </div>
+
+                <div>
+
+                    <h3>
+                        ${escapeHtml(item.organization)}
+                    </h3>
+
+                    <p>
+                        ${escapeHtml(item.role)}
+                    </p>
+
+                    <span class="badge">
+                        ${escapeHtml(item.category)}
+                    </span>
+
+                    <span class="muted">
+                        Order: ${item.sort_order}
+                    </span>
+
+                </div>
+
+                <div class="item-actions">
+
+                    <button
+                        class="owner-button small secondary"
+                        onclick="editExperience(${item.id})">
+                        Edit
+                    </button>
+
+                    <button
+                        class="owner-button small danger"
+                        onclick="deleteExperience(${item.id})">
+                        Delete
+                    </button>
+
+                </div>
+
+            </div>
+
+        `).join("");
+
+    if (!filtered.length) {
+
+        $("experienceList").innerHTML =
+            "<p class='muted'>No experience in this category.</p>";
+    }
+}
+
+async function saveExperience() {
+
+    try {
+
+        const id =
+            $("experienceId").value;
+
+        const body = {
+
+            organization:
+                $("experienceOrganization").value.trim(),
+
+            role:
+                $("experienceRole").value.trim(),
+
+            category:
+                $("experienceCategory").value,
+
+            sort_order:
+                Number($("experienceOrder").value) || 0
+
+        };
+
+        if (!body.organization ||
+            !body.role) {
+
+            alert(
+                "Organisation and role are required."
+            );
+
+            return;
+        }
+
+        if (id) {
+
+            await api(
+                `/admin/experience/${id}`,
+                {
+                    method: "PUT",
+                    body: JSON.stringify(body)
+                }
+            );
+
+        } else {
+
+            await api(
+                "/admin/experience",
+                {
+                    method: "POST",
+                    body: JSON.stringify(body)
+                }
+            );
+
+        }
+
+        clearExperienceForm();
+
+        await loadExperience();
+
+    } catch (error) {
+
+        alert(error.message);
+    }
+}
+
+function editExperience(id) {
+
+    const item =
+        experience.find(
+            entry => entry.id === id
+        );
+
+    if (!item) return;
+
+    $("experienceId").value =
+        item.id;
+
+    $("experienceOrganization").value =
+        item.organization;
+
+    $("experienceRole").value =
+        item.role;
+
+    $("experienceCategory").value =
+        item.category;
+
+    $("experienceOrder").value =
+        item.sort_order || 0;
+
+    switchTab("experience");
+}
+
+function clearExperienceForm() {
+
+    $("experienceId").value = "";
+    $("experienceOrganization").value = "";
+    $("experienceRole").value = "";
+    $("experienceCategory").value = "senior";
+    $("experienceOrder").value = 0;
+}
+
+async function deleteExperience(id) {
+
+    if (!confirm(
+        "Delete this experience entry?"
+    )) return;
+
+    try {
+
+        await api(
+            `/admin/experience/${id}`,
+            {
+                method: "DELETE"
+            }
+        );
+
+        await loadExperience();
+
+    } catch (error) {
+
+        alert(error.message);
+    }
+}
+
+/* IMAGES */
+
+const dropZone =
+    $("dropZone");
+
+const imageInput =
+    $("imageInput");
+
+dropZone.addEventListener(
+    "click",
+    () => imageInput.click()
+);
+
+dropZone.addEventListener(
+    "dragover",
+    event => {
+
+        event.preventDefault();
+
+        dropZone.classList.add(
+            "dragging"
+        );
+
+    }
+);
+
+dropZone.addEventListener(
+    "dragleave",
+    () => {
+
+        dropZone.classList.remove(
+            "dragging"
+        );
+
+    }
+);
+
+dropZone.addEventListener(
+    "drop",
+    event => {
+
+        event.preventDefault();
+
+        dropZone.classList.remove(
+            "dragging"
+        );
+
+        const file =
+            event.dataTransfer.files[0];
+
+        if (file) {
+            uploadImage(file);
+        }
+
+    }
+);
+
+imageInput.addEventListener(
+    "change",
+    () => {
+
+        const file =
+            imageInput.files[0];
+
+        if (file) {
+            uploadImage(file);
+        }
+
+    }
+);
+
+async function uploadImage(file) {
+
+    if (!file.type.startsWith("image/")) {
+
+        alert("Please select an image.");
+        return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+
+        alert(
+            "Maximum image size is 5 MB."
+        );
+
+        return;
+    }
+
+    const status =
+        $("uploadStatus");
+
+    status.classList.remove(
+        "hidden"
+    );
+
+    status.textContent =
+        `Uploading ${file.name}...`;
+
+    try {
+
+        const base64 =
+            await fileToBase64(file);
+
+        await api(
+            "/admin/images/upload",
+            {
+                method: "POST",
+                body: JSON.stringify({
+
+                    name: file.name,
+
+                    mime_type: file.type,
+
+                    data_base64:
+                        base64.split(",")[1],
+
+                    category:
+                        $("imageCategory").value ||
+                        "general",
+
+                    project_id:
+                        $("imageProjectId").value
+                            ? Number(
+                                $("imageProjectId").value
+                              )
+                            : null,
+
+                    experience_id:
+                        $("imageExperienceId").value
+                            ? Number(
+                                $("imageExperienceId").value
+                              )
+                            : null
+                })
+            }
+        );
+
+        status.textContent =
+            "✅ Upload complete!";
+
+        imageInput.value = "";
+
+        await loadImages();
+
+    } catch (error) {
+
+        status.textContent =
+            "❌ " + error.message;
+    }
+}
+
+function fileToBase64(file) {
+
+    return new Promise(
+        (resolve,reject) => {
+
+            const reader =
+                new FileReader();
+
+            reader.onload =
+                () => resolve(
+                    reader.result
+                );
+
+            reader.onerror =
+                reject;
+
+            reader.readAsDataURL(file);
+        }
+    );
+}
+
+async function loadImages() {
+
+    const data =
+        await api("/admin/images");
+
+    images =
+        data.images || [];
+
+    renderImages();
+}
+
+function renderImages() {
+
+    $("imageLibrary").innerHTML =
+        images.length
+
+        ? images.map(image => `
+
+            <div class="image-card">
+
+                <img
+                    src="${escapeHtml(image.url)}"
+                    alt="${escapeHtml(image.name)}"
+                >
+
+                <div class="image-card-info">
+
+                    <small>
+                        ${escapeHtml(image.name)}
+                    </small>
+
+                    <span class="badge">
+                        ${escapeHtml(image.category)}
+                    </span>
+
+                    <button
+                        class="owner-button small danger"
+                        onclick="deleteImage(${image.id})">
+                        Delete
+                    </button>
+
+                </div>
+
+            </div>
+
+        `).join("")
+
+        : "<p class='muted'>No images uploaded yet.</p>";
+}
+
+async function deleteImage(id) {
+
+    if (!confirm(
+        "Remove this image from the portfolio library?"
+    )) return;
+
+    try {
+
+        await api(
+            `/admin/images/${id}`,
+            {
+                method: "DELETE"
+            }
+        );
+
+        await loadImages();
+
+    } catch (error) {
+
+        alert(error.message);
+    }
+}
+
+/* CUSTOMERS */
+
+async function loadCustomers() {
+
+    const data =
+        await api("/admin/accounts");
+
+    customers =
+        data.accounts || [];
+
+    renderCustomers();
+
+    $("statCustomers").textContent =
+        customers.filter(
+            customer =>
+                customer.role === "customer"
+        ).length;
+
+    populateCustomerSelect();
+}
+
+function renderCustomers() {
+
+    const list =
+        customers.filter(
+            customer =>
+                customer.role === "customer"
+        );
+
+    $("customerList").innerHTML =
+        list.length
+
+        ? list.map(customer => `
+
+            <div class="list-item">
+
+                <div class="list-item-header">
+
+                    <div>
+
+                        <h3>
+                            ${escapeHtml(
+                                customer.display_name
+                            )}
+                        </h3>
+
+                        <p class="muted">
+                            ${escapeHtml(
+                                customer.email
+                            )}
+                        </p>
+
+                        ${
+                            customer.active
+                            ? `<span class="badge">
+                                Active
+                              </span>`
+                            : `<span class="badge off">
+                                Terminated
+                              </span>`
+                        }
+
+                    </div>
+
+                    <div class="item-actions">
+
+                        ${
+                            customer.active
+
+                            ? `<button
+                                class="owner-button small danger"
+                                onclick="terminateCustomer(${customer.id})">
+                                Terminate
+                              </button>`
+
+                            : `<button
+                                class="owner-button small"
+                                onclick="restoreCustomer(${customer.id})">
+                                Restore
+                              </button>`
+                        }
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        `).join("")
+
+        : "<p class='muted'>No customers yet.</p>";
+}
+
+function populateCustomerSelect() {
+
+    $("ownerReviewCustomer").innerHTML =
+        `<option value="">Select customer</option>` +
+
+        customers
+            .filter(
+                customer =>
+                    customer.role === "customer"
+                    && customer.active
+            )
+            .map(customer => `
+                <option value="${customer.id}">
+                    ${escapeHtml(
+                        customer.display_name
+                    )} — ${escapeHtml(
+                        customer.email
+                    )}
+                </option>
+            `)
+            .join("");
+}
+
+async function createCustomer() {
+
+    try {
+
+        const body = {
+
+            display_name:
+                $("customerName").value.trim(),
+
+            email:
+                $("customerEmail").value.trim(),
+
+            password:
+                $("customerPassword").value
+
+        };
+
+        if (!body.display_name ||
+            !body.email ||
+            body.password.length < 12) {
+
+            alert(
+                "Name, email and a 12+ character password are required."
+            );
+
+            return;
+        }
+
+        await api(
+            "/admin/accounts",
+            {
+                method: "POST",
+                body: JSON.stringify(body)
+            }
+        );
+
+        $("customerName").value = "";
+        $("customerEmail").value = "";
+        $("customerPassword").value = "";
+
+        alert("Customer account created.");
+
+        await loadCustomers();
+
+    } catch (error) {
+
+        alert(error.message);
+    }
+}
+
+async function terminateCustomer(id) {
+
+    if (!confirm(
+        "Terminate this customer account?"
+    )) return;
+
+    try {
+
+        await api(
+            `/admin/accounts/${id}/terminate`,
+            {
+                method: "POST"
+            }
+        );
+
+        await loadCustomers();
+
+    } catch (error) {
+
+        alert(error.message);
+    }
+}
+
+async function restoreCustomer(id) {
+
+    try {
+
+        await api(
+            `/admin/accounts/${id}/restore`,
+            {
+                method: "POST"
+            }
+        );
+
+        await loadCustomers();
+
+    } catch (error) {
+
+        alert(error.message);
+    }
+}
+
+/* REVIEWS */
+
+async function loadReviews() {
+
+    const data =
+        await api("/admin/reviews");
+
+    reviews =
+        data.reviews || [];
+
+    renderReviews();
+}
+
+function renderReviews() {
+
+    $("reviewList").innerHTML =
+        reviews.length
+
+        ? reviews.map(review => `
+
+            <div class="list-item">
+
+                <div class="list-item-header">
+
+                    <div>
+
+                        <h3>
+                            ${escapeHtml(
+                                review.display_name
+                            )}
+                        </h3>
+
+                        <div class="stars">
+                            ${
+                                "★".repeat(
+                                    review.rating
+                                )
+                            }${
+                                "☆".repeat(
+                                    5-review.rating
+                                )
+                            }
+                        </div>
+
+                        <p>
+                            "${escapeHtml(
+                                review.review_text
+                            )}"
+                        </p>
+
+                        ${
+                            review.approved
+
+                            ? `<span class="badge">
+                                Approved
+                              </span>`
+
+                            : `<span class="badge off">
+                                Pending
+                              </span>`
+                        }
+
+                    </div>
+
+                    <div class="item-actions">
+
+                        ${
+                            !review.approved
+
+                            ? `<button
+                                class="owner-button small"
+                                onclick="approveReview(${review.id})">
+                                Approve
+                              </button>`
+
+                            : ""
+                        }
+
+                        <button
+                            class="owner-button small danger"
+                            onclick="deleteReview(${review.id})">
+                            Delete
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        `).join("")
+
+        : "<p class='muted'>No reviews yet.</p>";
+}
+
+async function createReview() {
+
+    const accountId =
+        Number(
+            $("ownerReviewCustomer").value
+        );
+
+    const rating =
+        Number(
+            $("ownerReviewRating").value
+        );
+
+    const reviewText =
+        $("ownerReviewText").value.trim();
+
+    if (!accountId ||
+        !reviewText) {
+
+        alert(
+            "Select a customer and write a review."
+        );
+
+        return;
+    }
+
+    try {
+
+        await api(
+            "/admin/reviews",
+            {
+                method: "POST",
+                body: JSON.stringify({
+
+                    account_id: accountId,
+
+                    rating,
+
+                    review_text: reviewText
+                })
+            }
+        );
+
+        $("ownerReviewCustomer").value = "";
+        $("ownerReviewText").value = "";
+
+        await loadReviews();
+
+        alert("Review published.");
+
+    } catch (error) {
+
+        alert(error.message);
+    }
+}
+
+async function approveReview(id) {
+
+    try {
+
+        await api(
+            `/admin/reviews/${id}/approve`,
+            {
+                method: "POST"
+            }
+        );
+
+        await loadReviews();
+
+    } catch (error) {
+
+        alert(error.message);
+    }
+}
+
+async function deleteReview(id) {
+
+    if (!confirm(
+        "Delete this review?"
+    )) return;
+
+    try {
+
+        await api(
+            `/admin/reviews/${id}`,
+            {
+                method: "DELETE"
+            }
+        );
+
+        await loadReviews();
+
+    } catch (error) {
+
+        alert(error.message);
+    }
+}
+
+/* CONVERSATIONS */
+
+async function loadConversations() {
+
+    const data =
+        await api("/admin/conversations");
+
+    conversations =
+        data.conversations || [];
+
+    renderConversations();
+
+    $("statMessages").textContent =
+        conversations.length;
+}
+
+function renderConversations() {
+
+    $("conversationList").innerHTML =
+        conversations.length
+
+        ? conversations.map(conversation => {
+
+            const isGuest =
+                !conversation.account_id;
+
+            const name =
+                isGuest
+                    ? conversation.guest_name || "Guest"
+                    : conversation.account_name || "Customer";
+
+            const contact =
+                isGuest
+                    ? conversation.guest_contact || ""
+                    : conversation.account_email || "";
+
+            return `
+
+                <div
+                    class="conversation ${
+                        selectedConversation === conversation.id
+                            ? "selected"
+                            : ""
+                    }"
+                    onclick="selectConversation(${conversation.id})">
+
+                    <strong>
+                        ${escapeHtml(name)}
+                    </strong>
+
+                    <small>
+                        ${escapeHtml(contact)}
+                    </small>
+
+                    <small>
+                        ${isGuest ? "Guest request" : "Customer"}
+                        • ${escapeHtml(
+                            conversation.status
+                        )}
+                    </small>
+
+                </div>
+
+            `;
+
+        }).join("")
+
+        : "<p class='muted'>No conversations yet.</p>";
+}
+
+async function selectConversation(id) {
+
+    selectedConversation = id;
+
+    const conversation =
+        conversations.find(
+            item => item.id === id
+        );
+
+    if (!conversation) return;
+
+    const isGuest =
+        !conversation.account_id;
+
+    $("selectedConversationTitle")
+        .textContent =
+            isGuest
+                ? `💬 ${conversation.guest_name || "Guest"}`
+                : `💬 ${conversation.account_name || "Customer"}`;
+
+    renderConversations();
+
+    await loadOwnerMessages();
+}
+
+async function loadOwnerMessages() {
+
+    if (!selectedConversation) return;
+
+    const conversation =
+        conversations.find(
+            item =>
+                item.id === selectedConversation
+        );
+
+    if (!conversation) return;
+
+    let data;
+
+    if (conversation.account_id) {
+
+        data = await api(
+            `/conversations/${selectedConversation}/messages`
+        );
+
+    } else {
+
+        /*
+         * Guest messages use their guest token.
+         */
+
+        if (!conversation.guest_token) {
+            $("ownerChat").innerHTML =
+                "<p class='muted'>Guest token unavailable.</p>";
+            return;
+        }
+
+        data = await api(
+            `/guest/conversations/${conversation.guest_token}/messages`
+        );
+    }
+
+    $("ownerChat").innerHTML =
+        data.messages.map(message => `
+
+            <div class="chat-message ${
+                message.sender_role === "owner"
+                    ? "owner"
+                    : "customer"
+            }">
+
+                <small>
+                    ${escapeHtml(
+                        message.sender_name ||
+                        (message.sender_role === "owner"
+                            ? "Owner"
+                            : conversation.guest_name || "Customer")
+                    )}
+                </small>
+
+                ${escapeHtml(
+                    message.message_text
+                )}
+
+            </div>
+
+        `).join("");
+
+    $("ownerChat").scrollTop =
+        $("ownerChat").scrollHeight;
+}
+
+$("ownerChatForm")
+    .addEventListener(
+        "submit",
+        async event => {
+
+            event.preventDefault();
+
+            if (!selectedConversation) {
+
+                alert(
+                    "Select a conversation first."
+                );
+
+                return;
+            }
+
+            const input =
+                $("ownerChatInput");
+
+            const message =
+                input.value.trim();
+
+            if (!message) return;
+
+            try {
+
+                const conversation =
+                    conversations.find(
+                        item =>
+                            item.id === selectedConversation
+                    );
+
+                if (conversation.account_id) {
+
+                    await api(
+                        `/conversations/${selectedConversation}/messages`,
+                        {
+                            method: "POST",
+                            body: JSON.stringify({
+                                message
+                            })
+                        }
+                    );
+
+                } else {
+
+                    /*
+                     * Guest owner replies use the
+                     * existing owner-authorized
+                     * conversation endpoint.
+                     */
+
+                    await api(
+                        `/conversations/${selectedConversation}/messages`,
+                        {
+                            method: "POST",
+                            body: JSON.stringify({
+                                message
+                            })
+                        }
+                    );
+                }
+
+                input.value = "";
+
+                await loadOwnerMessages();
+
+            } catch (error) {
+
+                alert(error.message);
+            }
+
+        }
+    );
+
+/* LOAD EVERYTHING */
+
+async function loadEverything() {
+
+    try {
+
+        await Promise.all([
+            loadProjects(),
+            loadExperience(),
+            loadImages(),
+            loadCustomers(),
+            loadReviews(),
+            loadConversations()
+        ]);
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert(
+            "Some dashboard data could not be loaded: " +
+            error.message
+        );
+    }
+}
+
+/* AUTO REFRESH CHAT */
+
+setInterval(async () => {
+
+    if (selectedConversation) {
+
+        try {
+            await loadConversations();
+            await loadOwnerMessages();
+        } catch {}
+    }
+
+}, 5000);
+
+/* LOGOUT */
+
+$("logoutBtn")
+    .addEventListener(
+        "click",
+        async () => {
+
+            try {
+
+                await api(
+                    "/auth/logout",
+                    {
+                        method: "POST"
+                    }
+                );
+
+            } finally {
+
+                location.href =
+                    "portal.html";
+            }
+
+        }
+    );
+
+/* START */
+
+checkAuth();
+
+</script>
+
+</body>
+</html>

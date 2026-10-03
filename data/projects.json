@@ -1,0 +1,24 @@
+﻿{
+    "featured": [
+        {
+            "title": "InfiniteMod",
+            "description": "A client-side Minecraft Fabric mod focused on HUD improvements, PvP utilities and quality-of-life features.",
+            "tags": ["Minecraft", "Java", "Fabric"]
+        },
+        {
+            "title": "Prism Reflect",
+            "description": "A classroom display and screen streaming project designed as a modern alternative to existing presentation systems.",
+            "tags": ["Software", "JavaScript", "Web"]
+        },
+        {
+            "title": "Infinite Pad",
+            "description": "A custom programmable macro pad combining hardware, firmware and software.",
+            "tags": ["ESP32", "Hardware", "Python"]
+        },
+        {
+            "title": "Outback Border RP",
+            "description": "An Australian-inspired Emergency Response: Liberty County roleplay project.",
+            "tags": ["Roblox", "ER:LC", "Roleplay"]
+        }
+    ]
+}
