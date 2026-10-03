@@ -2436,7 +2436,7 @@ async function loadOwnerMessages() {
         }
 
         data = await api(
-            `/guest/conversations/${conversation.guest_token}/messages`
+            `/conversations/${selectedConversation}/messages`
         );
     }
 
