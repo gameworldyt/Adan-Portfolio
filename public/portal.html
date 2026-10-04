@@ -258,6 +258,35 @@
             flex-wrap: wrap;
         }
 
+        .customer-tools {
+            margin-top: 20px;
+        }
+
+        .customer-tool-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 28px;
+        }
+
+        .job-list {
+            display: grid;
+            gap: 12px;
+            margin-top: 18px;
+        }
+
+        .job-card {
+            padding: 16px;
+            border: 1px solid rgba(148, 163, 184, 0.12);
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.035);
+        }
+
+        .job-card p {
+            margin: 10px 0;
+            color: #cbd5e1;
+            line-height: 1.6;
+        }
+
         .hidden {
             display: none !important;
         }
@@ -285,6 +314,9 @@
         }
 
         @media (max-width: 800px) {
+            .customer-tool-grid {
+                grid-template-columns: 1fr;
+            }
             .portal-grid {
                 grid-template-columns: 1fr;
             }
@@ -567,6 +599,27 @@
 
         </div>
 
+        <section class="portal-card customer-tools">
+            <div class="customer-tool-grid">
+                <div>
+                    <p class="eyebrow">WORK WITH ME</p>
+                    <h2>Request a job</h2>
+                    <p class="muted">Tell me what you need and choose how you would like to pay.</p>
+                    <form id="jobRequestForm" class="portal-form">
+                        <label>Job title<input id="jobTitle" maxlength="120" required placeholder="e.g. Roblox GFX commission"></label>
+                        <label>Brief<textarea id="jobDescription" maxlength="4000" required placeholder="Describe the work, deadline and requirements..."></textarea></label>
+                        <label>Payment method<select id="jobPaymentMethod" required><option value="">Choose payment method</option><option value="robux">Robux</option><option value="paypal">PayPal</option></select></label>
+                        <button class="btn btn-primary" type="submit">Send Job Request →</button>
+                    </form>
+                </div>
+                <div>
+                    <p class="eyebrow">YOUR WORK</p>
+                    <h2>Ongoing jobs</h2>
+                    <div id="customerJobs" class="job-list"><div class="empty">Loading jobs...</div></div>
+                </div>
+            </div>
+        </section>
+
         <section
             class="portal-card"
             style="margin-top:20px;"
@@ -827,6 +880,7 @@ async function checkSession() {
         showCustomer();
 
         await loadCustomerConversations();
+        await loadCustomerJobs();
 
     } catch {
         currentAccount = null;
@@ -1218,6 +1272,27 @@ async function loadCustomerConversations() {
             return;
         }
 
+        async function loadCustomerJobs() {
+            try {
+                const data = await api("/jobs");
+                const jobs = data.jobs || [];
+                $("customerJobs").innerHTML = jobs.length
+                    ? jobs.map(job => `
+                        <article class="job-card">
+                            <div class="conversation-title">
+                                <strong>${escapeHtml(job.title)}</strong>
+                                <span class="badge">${escapeHtml(job.status)}</span>
+                            </div>
+                            <p>${escapeHtml(job.description)}</p>
+                            <small class="muted">Payment: ${escapeHtml(job.payment_method || "Not selected")} · ${escapeHtml(job.payment_status)}</small>
+                        </article>
+                    `).join("")
+                    : `<div class="empty">No jobs yet. Submit a request to get started.</div>`;
+            } catch (error) {
+                toast(error.message, "error");
+            }
+        }
+
         list.innerHTML =
             conversations
                 .map(conversation => `
@@ -1413,6 +1488,25 @@ $("newCustomerConversationForm")
                             })
                         }
                     );
+
+$("jobRequestForm").addEventListener("submit", async event => {
+                    event.preventDefault();
+                    try {
+                        await api("/jobs", {
+                            method: "POST",
+                            body: JSON.stringify({
+                                title: $("jobTitle").value.trim(),
+                                description: $("jobDescription").value.trim(),
+                                payment_method: $("jobPaymentMethod").value
+                            })
+                        });
+                        $("jobRequestForm").reset();
+                        await loadCustomerJobs();
+                        toast("Job request sent successfully.", "success");
+                    } catch (error) {
+                        toast(error.message, "error");
+                    }
+});
 
                 textarea.value = "";
 

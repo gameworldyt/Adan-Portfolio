@@ -1,4 +1,4 @@
-﻿function json(data, status = 200, origin = "*") {
+function json(data, status = 200, origin = "*") {
     return new Response(JSON.stringify(data), {
         status,
         headers: {
@@ -187,7 +187,7 @@ async function notifyEmail(env, message, subject = "New Adan Portfolio Message")
             {
                 method: "POST",
                 headers: {
-                    "Authorization": `Bearer ${env.RESEND_API_KEY}`,
+                    "Authorization": "Bearer " + env.RESEND_API_KEY,
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
@@ -196,7 +196,7 @@ async function notifyEmail(env, message, subject = "New Adan Portfolio Message")
                     subject,
                     html: `
                         <div style="font-family:Arial,sans-serif;max-width:700px;margin:auto">
-                            <h2>💬 New Portfolio Message</h2>
+                            <h2>?? New Portfolio Message</h2>
                             <div style="padding:16px;background:#f4f7fb;border-radius:10px">
                                 ${htmlMessage}
                             </div>
@@ -302,7 +302,7 @@ async function uploadImageToGitHub(env, file) {
         {
             method: "PUT",
             headers: {
-                "Authorization": `Bearer ${env.GITHUB_TOKEN}`,
+                "Authorization": "Bearer " + env.GITHUB_TOKEN,
                 "Accept": "application/vnd.github+json",
                 "X-GitHub-Api-Version": "2022-11-28",
                 "User-Agent": "adan-portfolio-worker",
@@ -419,6 +419,24 @@ export async function handlePortalFeature(
             );
         }
 
+        if (
+            request.method === "GET" &&
+            path === "/images"
+        ) {
+            const result = await env.DB.prepare(`
+                SELECT id, name, url, category, project_id,
+                    experience_id, created_at
+                FROM images
+                ORDER BY id DESC
+            `).all();
+
+            return json(
+                { images: result.results || [] },
+                200,
+                origin
+            );
+        }
+
         /*
          * ============================================================
          * CUSTOMER REVIEWS
@@ -514,6 +532,76 @@ export async function handlePortalFeature(
                     message:
                         "Review submitted for approval."
                 },
+                201,
+                origin
+            );
+        }
+
+        if (
+            request.method === "GET" &&
+            path === "/jobs"
+        ) {
+            const authError = requireCustomer(account, origin);
+            if (authError) return authError;
+
+            const result = await env.DB.prepare(`
+                SELECT id, title, description, status, payment_method,
+                    payment_status, created_at, updated_at
+                FROM jobs
+                WHERE account_id = ?
+                ORDER BY id DESC
+            `).bind(account.id).all();
+
+            return json({ jobs: result.results || [] }, 200, origin);
+        }
+
+        if (
+            request.method === "POST" &&
+            path === "/jobs"
+        ) {
+            const authError = requireCustomer(account, origin);
+            if (authError) return authError;
+
+            const body = await readJson(request);
+            const title = String(body.title || "").trim();
+            const description = String(body.description || "").trim();
+            const paymentMethod = String(body.payment_method || "").trim();
+
+            if (!title || !description) {
+                return json(
+                    { error: "Job title and description are required." },
+                    400,
+                    origin
+                );
+            }
+
+            if (!["robux", "paypal"].includes(paymentMethod)) {
+                return json(
+                    { error: "Choose Robux or PayPal as the payment method." },
+                    400,
+                    origin
+                );
+            }
+
+            const result = await env.DB.prepare(`
+                INSERT INTO jobs
+                (account_id, title, description, payment_method)
+                VALUES (?, ?, ?, ?)
+            `).bind(
+                account.id,
+                title.slice(0, 120),
+                description.slice(0, 4000),
+                paymentMethod
+            ).run();
+
+            await notifyOwner(
+                env,
+                `🛠️ New job request\n\nCustomer: ${account.display_name}\nEmail: ${account.email}\nTitle: ${title}\nPayment: ${paymentMethod}\n\n${description}`,
+                "New Adan Portfolio Job Request"
+            );
+
+            return json(
+                { success: true, job_id: result.meta.last_row_id },
                 201,
                 origin
             );
@@ -858,7 +946,7 @@ export async function handlePortalFeature(
 
             await notifyOwner(
                 env,
-                `📩 New guest message on Adan's portfolio
+                `?? New guest message on Adan's portfolio
 
 Guest: ${name}
 Contact: ${contact}
@@ -1032,7 +1120,7 @@ ${message}`
 
             await notifyOwner(
                 env,
-                `💬 New guest reply on Adan's portfolio
+                `?? New guest reply on Adan's portfolio
 
 Guest: ${conversation.guest_name || "Guest"}
 Contact: ${conversation.guest_contact || "Not supplied"}
@@ -1169,7 +1257,7 @@ ${message}`
 
             await notifyOwner(
                 env,
-                `📩 New customer message on Adan's portfolio
+                `?? New customer message on Adan's portfolio
 
 Customer: ${account.display_name}
 Email: ${account.email}
@@ -1326,7 +1414,7 @@ ${message}`
 
                 await notifyOwner(
                     env,
-                    `💬 New customer reply
+                    `?? New customer reply
 
 Customer: ${account.display_name}
 Email: ${account.email}

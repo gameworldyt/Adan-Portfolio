@@ -891,6 +891,54 @@ export default {
                 );
             }
 
+            if (
+                request.method === "GET" &&
+                path === "/reviews"
+            ) {
+                const result = await env.DB
+                    .prepare(`
+                        SELECT
+                            reviews.id,
+                            reviews.rating,
+                            reviews.review_text,
+                            reviews.created_at,
+                            accounts.display_name,
+                            accounts.email
+                        FROM reviews
+                        JOIN accounts
+                            ON accounts.id = reviews.account_id
+                        WHERE reviews.approved = 1
+                        ORDER BY reviews.created_at DESC
+                    `)
+                    .all();
+
+                return json(
+                    { reviews: result.results || [] },
+                    200,
+                    origin
+                );
+            }
+
+            if (
+                request.method === "GET" &&
+                path === "/images"
+            ) {
+                const result = await env.DB
+                    .prepare(`
+                        SELECT id, name, url, category, project_id,
+                            experience_id, created_at
+                        FROM images
+                        ORDER BY id DESC
+                    `)
+                    .all();
+
+                return json(
+                    { images: result.results || [] },
+                    200,
+                    origin
+                );
+            }
+
             /*
              * ADMIN PROJECT CRUD
              */

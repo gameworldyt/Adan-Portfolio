@@ -201,6 +201,7 @@ document.addEventListener("DOMContentLoaded", () => {
     ========================================== */
 
     loadReviews();
+    loadImages();
 
 
     /* ==========================================
@@ -531,20 +532,17 @@ async function loadReviews() {
 
     try {
 
-        const response =
-            await fetch("./data/reviews.json");
-
-        if (!response.ok) {
-            throw new Error("Reviews unavailable.");
-        }
-
-        const data =
-            await response.json();
+        const data = await fetchWithFallback(
+            "/reviews",
+            "./data/reviews.json"
+        );
 
         const reviews =
             data.reviews || [];
 
-        const approvedReviews = reviews.filter(review => review.approved);
+        const approvedReviews = reviews.filter(review =>
+            review.approved === undefined || review.approved === true || review.approved === 1
+        );
 
         container.innerHTML =
             approvedReviews
@@ -557,7 +555,7 @@ async function loadReviews() {
                             <img
                                 class="review-avatar"
                                 src="${escapeAttribute(
-                                    review.avatar
+                                    review.avatar || "assets/uploads/1791019126875-30671a71-noobdude-pfp.png"
                                 )}"
                                 alt=""
                             >
@@ -565,12 +563,12 @@ async function loadReviews() {
                             <div>
 
                                 <div class="review-name">
-                                    ${escapeHTML(review.name)}
+                                    ${escapeHTML(                                    review.display_name || review.name)}
                                 </div>
 
                                 <div class="review-identity">
                                     ${escapeHTML(
-                                        review.identity
+                                        review.identity || "Verified customer"
                                     )}
                                 </div>
 
@@ -591,7 +589,7 @@ async function loadReviews() {
                         </div>
 
                         <p class="review-text">
-                            ${escapeHTML(review.text)}
+                            ${escapeHTML(review.review_text || review.text)}
                         </p>
 
                     </article>
@@ -614,6 +612,36 @@ async function loadReviews() {
 
     }
 
+}
+
+async function loadImages() {
+    const container = document.getElementById("portfolio-images-list");
+    if (!container) return;
+
+    try {
+        const data = await fetchWithFallback("/images", "./data/site.json");
+        const images = data.images || [];
+
+        if (!images.length) {
+            container.innerHTML = `
+                <div class="empty-state glass-card">
+                    <div class="empty-icon">🖼️</div>
+                    <h3>Images coming soon</h3>
+                    <p>Portfolio images will appear here as they are published.</p>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = images.map(image => `
+            <figure class="portfolio-image-card glass-card">
+                <img src="${escapeAttribute(image.url)}" alt="${escapeAttribute(image.name)}" loading="lazy">
+                <figcaption>${escapeHTML(image.name)}</figcaption>
+            </figure>
+        `).join("");
+    } catch (error) {
+        console.error("Image loading error:", error);
+    }
 }
 
 const API_BASE = "https://adan-portfolio-api.adanfuau1.workers.dev";

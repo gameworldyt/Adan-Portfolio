@@ -1162,6 +1162,29 @@ a {
     margin-bottom: 25px;
 }
 
+.portfolio-images-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+}
+
+.portfolio-image-card {
+    overflow: hidden;
+}
+
+.portfolio-image-card img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+}
+
+.portfolio-image-card figcaption {
+    padding: 14px 16px;
+    color: var(--muted);
+    font-size: .85rem;
+}
+
 .review-card {
     padding: 27px;
 }
@@ -1519,7 +1542,8 @@ footer {
     .about-grid,
     .projects-grid,
     .skills-grid,
-    .reviews-grid {
+    .reviews-grid,
+    .portfolio-images-grid {
         grid-template-columns: 1fr;
     }
 
