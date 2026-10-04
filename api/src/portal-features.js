@@ -608,6 +608,80 @@ export async function handlePortalFeature(
             );
         }
 
+        if (
+            request.method === "GET" &&
+            path === "/admin/jobs"
+        ) {
+            const authError = requireOwner(account, origin);
+            if (authError) return authError;
+
+            const result = await env.DB.prepare(`
+                SELECT
+                    j.id, j.account_id, j.title, j.description,
+                    j.status, j.payment_method, j.payment_status,
+                    j.created_at, j.updated_at,
+                    a.display_name AS customer_name,
+                    a.email AS customer_email
+                FROM jobs j
+                JOIN accounts a ON a.id = j.account_id
+                ORDER BY j.id DESC
+            `).all();
+
+            return json({ jobs: result.results || [] }, 200, origin);
+        }
+
+        const adminJobMatch = path.match(/^\/admin\/jobs\/(\d+)$/);
+
+        if (
+            request.method === "PATCH" &&
+            adminJobMatch
+        ) {
+            const authError = requireOwner(account, origin);
+            if (authError) return authError;
+
+            const jobId = Number(adminJobMatch[1]);
+            const body = await readJson(request);
+            const allowedStatuses = [
+                "requested",
+                "accepted",
+                "in_progress",
+                "awaiting_payment",
+                "completed",
+                "cancelled"
+            ];
+            const allowedPayments = [
+                "unpaid",
+                "pending",
+                "paid",
+                "refunded"
+            ];
+            const status = String(body.status || "");
+            const paymentStatus = String(body.payment_status || "");
+
+            if (
+                !allowedStatuses.includes(status) ||
+                !allowedPayments.includes(paymentStatus)
+            ) {
+                return json(
+                    { error: "Invalid job or payment status." },
+                    400,
+                    origin
+                );
+            }
+
+            const result = await env.DB.prepare(`
+                UPDATE jobs
+                SET status = ?, payment_status = ?, updated_at = CURRENT_TIMESTAMP
+                WHERE id = ?
+            `).bind(status, paymentStatus, jobId).run();
+
+            if (!result.meta.changes) {
+                return json({ error: "Job not found." }, 404, origin);
+            }
+
+            return json({ success: true }, 200, origin);
+        }
+
         /*
          * ============================================================
          * OWNER: WRITE REVIEW FOR CUSTOMER

@@ -553,6 +553,10 @@
             👥 Customers
         </button>
 
+        <button class="owner-tab" data-tab="jobs">
+            🛠️ Jobs
+        </button>
+
         <button class="owner-tab" data-tab="reviews">
             ⭐ Reviews
         </button>
@@ -562,6 +566,14 @@
         </button>
 
     </nav>
+
+    <section id="jobs" class="owner-section">
+        <div class="owner-card">
+            <h2>🛠️ Customer Job Requests</h2>
+            <p class="muted">Update work progress and payment status for every request.</p>
+            <div id="jobList" class="list">Loading...</div>
+        </div>
+    </section>
 
     <!-- OVERVIEW -->
 
@@ -1964,6 +1976,81 @@ async function loadCustomers() {
     populateCustomerSelect();
 }
 
+async function loadJobs() {
+    const data = await api("/admin/jobs");
+    const jobs = data.jobs || [];
+    const list = $("jobList");
+
+    list.innerHTML = jobs.length
+        ? jobs.map(job => `
+            <article class="owner-card" style="margin-top:14px;">
+                <div style="display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;">
+                    <div>
+                        <h3>${escapeHtml(job.title)}</h3>
+                        <p class="muted">
+                            ${escapeHtml(job.customer_name)} · ${escapeHtml(job.customer_email)}
+                        </p>
+                    </div>
+                    <small class="muted">${escapeHtml(job.created_at)}</small>
+                </div>
+                <p>${escapeHtml(job.description)}</p>
+                <p class="muted">
+                    Payment method: ${escapeHtml(job.payment_method || "—")}
+                </p>
+                <div class="form-grid">
+                    <label>
+                        Job status
+                        <select id="job-status-${job.id}">
+                            ${[
+                                ["requested", "Requested"],
+                                ["accepted", "Accepted"],
+                                ["in_progress", "In progress"],
+                                ["awaiting_payment", "Awaiting payment"],
+                                ["completed", "Completed"],
+                                ["cancelled", "Cancelled"]
+                            ].map(([value, label]) =>
+                                `<option value="${value}" ${job.status === value ? "selected" : ""}>${label}</option>`
+                            ).join("")}
+                        </select>
+                    </label>
+                    <label>
+                        Payment status
+                        <select id="job-payment-${job.id}">
+                            ${[
+                                ["unpaid", "Unpaid"],
+                                ["pending", "Pending"],
+                                ["paid", "Paid"],
+                                ["refunded", "Refunded"]
+                            ].map(([value, label]) =>
+                                `<option value="${value}" ${job.payment_status === value ? "selected" : ""}>${label}</option>`
+                            ).join("")}
+                        </select>
+                    </label>
+                </div>
+                <button class="owner-button small" onclick="saveJob(${job.id})">
+                    Save job update
+                </button>
+            </article>
+        `).join("")
+        : "<p class='muted'>No customer job requests yet.</p>";
+}
+
+async function saveJob(id) {
+    try {
+        await api(`/admin/jobs/${id}`, {
+            method: "PATCH",
+            body: JSON.stringify({
+                status: $(`job-status-${id}`).value,
+                payment_status: $(`job-payment-${id}`).value
+            })
+        });
+        await loadJobs();
+        alert("Job updated.");
+    } catch (error) {
+        alert(error.message);
+    }
+}
+
 function renderCustomers() {
 
     const list =
@@ -2591,6 +2678,7 @@ async function loadEverything() {
             loadExperience(),
             loadImages(),
             loadCustomers(),
+            loadJobs(),
             loadReviews(),
             loadConversations()
         ]);
