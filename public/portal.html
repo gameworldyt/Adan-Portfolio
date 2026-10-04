@@ -962,32 +962,37 @@ function showGuestChat() {
 }
 
 async function checkSession() {
+    let data;
+
     try {
-        const data =
-            await api("/auth/me");
-
-        currentAccount =
-            data.account || null;
-
-        if (!currentAccount) {
-            showAuth();
-            return;
-        }
-
-        if (currentAccount.role === "owner") {
-            window.location.href =
-                "owner.html";
-            return;
-        }
-
-        showCustomer();
-
-        await loadCustomerConversations();
-        await loadCustomerJobs();
-
-    } catch {
+        data = await api("/auth/me");
+    } catch (error) {
         currentAccount = null;
         showAuth();
+        toast(error.message, "error");
+        return;
+    }
+
+    currentAccount = data.account || null;
+
+    if (!currentAccount) {
+        showAuth();
+        return;
+    }
+
+    if (currentAccount.role === "owner") {
+        window.location.href = "owner.html";
+        return;
+    }
+
+    showCustomer();
+
+    try {
+        await loadCustomerConversations();
+        await loadCustomerJobs();
+    } catch (error) {
+        console.error("Customer portal data loading error:", error);
+        toast("Your session is active, but some portal data could not be loaded.", "error");
     }
 }
 
@@ -1375,27 +1380,6 @@ async function loadCustomerConversations() {
             return;
         }
 
-        async function loadCustomerJobs() {
-            try {
-                const data = await api("/jobs");
-                const jobs = data.jobs || [];
-                $("customerJobs").innerHTML = jobs.length
-                    ? jobs.map(job => `
-                        <article class="job-card">
-                            <div class="conversation-title">
-                                <strong>${escapeHtml(job.title)}</strong>
-                                <span class="badge">${escapeHtml(job.status)}</span>
-                            </div>
-                            <p>${escapeHtml(job.description)}</p>
-                            <small class="muted">Payment: ${escapeHtml(job.payment_method || "Not selected")} · ${escapeHtml(job.payment_status)}</small>
-                        </article>
-                    `).join("")
-                    : `<div class="empty">No jobs yet. Submit a request to get started.</div>`;
-            } catch (error) {
-                toast(error.message, "error");
-            }
-        }
-
         list.innerHTML =
             conversations
                 .map(conversation => `
@@ -1463,6 +1447,30 @@ async function loadCustomerConversations() {
             error.message,
             "error"
         );
+    }
+}
+
+async function loadCustomerJobs() {
+    try {
+        const data = await api("/jobs");
+        const jobs = data.jobs || [];
+        $("customerJobs").innerHTML = jobs.length
+            ? jobs.map(job => `
+                <article class="job-card">
+                    <div class="conversation-title">
+                        <strong>${escapeHtml(job.title)}</strong>
+                        <span class="badge">${escapeHtml(job.status)}</span>
+                    </div>
+                    <p>${escapeHtml(job.description)}</p>
+                    <small class="muted">Payment: ${escapeHtml(job.payment_method || "Not selected")} · ${escapeHtml(job.payment_status)}</small>
+                </article>
+            `).join("")
+            : `<div class="empty">No jobs yet. Submit a job request to get started.</div>`;
+    } catch (error) {
+        console.error("Customer jobs loading error:", error);
+        $("customerJobs").innerHTML =
+            `<div class="empty">Jobs could not be loaded. Please refresh and try again.</div>`;
+        toast(error.message, "error");
     }
 }
 
