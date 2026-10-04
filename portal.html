@@ -378,7 +378,7 @@
 
         <nav class="nav-links">
             <a href="index.html">Portfolio</a>
-            <a href="owner.html">Owner Portal</a>
+            <a href="owner-login.html">Owner Portal</a>
         </nav>
     </div>
 </header>
@@ -1463,7 +1463,11 @@ async function loadCustomerJobs() {
                         <span class="badge">${escapeHtml(job.status)}</span>
                     </div>
                     <p>${escapeHtml(job.description)}</p>
-                    <small class="muted">Payment: ${escapeHtml(job.payment_method || "Not selected")} · ${escapeHtml(job.payment_status)}</small>
+                    <small class="muted">
+                        Payment: ${escapeHtml(job.payment_method || "Not selected")} · ${escapeHtml(job.payment_status)}
+                        · Price: ${job.price_amount === null || job.price_amount === undefined ? "Not set" : escapeHtml(job.price_amount)}
+                        · Deadline: ${escapeHtml(job.deadline || "Not set")}
+                    </small>
                 </article>
             `).join("")
             : `<div class="empty">No jobs yet. Submit a request to get started.</div>`;

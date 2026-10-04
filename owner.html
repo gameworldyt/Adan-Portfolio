@@ -1246,7 +1246,7 @@ async function checkAuth() {
         if (!data.account ||
             data.account.role !== "owner") {
 
-            location.href = "portal.html";
+            location.href = "owner-login.html";
             return;
         }
 
@@ -2014,6 +2014,10 @@ async function loadJobs() {
                 <p class="muted">
                     Payment method: ${escapeHtml(job.payment_method || "—")}
                 </p>
+                <p class="muted">
+                    Price: ${job.price_amount === null || job.price_amount === undefined ? "Not set" : escapeHtml(job.price_amount)}
+                    · Deadline: ${escapeHtml(job.deadline || "Not set")}
+                </p>
                 <div class="form-grid">
                     <label>
                         Job status
@@ -2043,6 +2047,14 @@ async function loadJobs() {
                             ).join("")}
                         </select>
                     </label>
+                    <label>
+                        Price
+                        <input id="job-price-${job.id}" type="number" min="0" step="0.01" value="${job.price_amount ?? ""}">
+                    </label>
+                    <label>
+                        Deadline
+                        <input id="job-deadline-${job.id}" type="date" value="${escapeHtml(job.deadline || "")}">
+                    </label>
                 </div>
                 <button class="owner-button small" onclick="saveJob(${job.id})">
                     Save job update
@@ -2061,6 +2073,8 @@ async function saveJob(id) {
             body: JSON.stringify({
                 status: $(`job-status-${id}`).value,
                 payment_status: $(`job-payment-${id}`).value
+                ,price_amount: $(`job-price-${id}`).value
+                ,deadline: $(`job-deadline-${id}`).value
             })
         });
         await loadJobs();

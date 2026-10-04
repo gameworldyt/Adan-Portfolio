@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Owner Sign In | Adan</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .owner-login { max-width: 520px; margin: 12vh auto; padding: 28px; }
+        .owner-login form { display: grid; gap: 16px; }
+        .owner-login label { display: grid; gap: 8px; }
+        .owner-login input { width: 100%; }
+        .owner-login .notice { margin-bottom: 18px; }
+        .owner-login .error { color: #fca5a5; min-height: 1.4em; }
+    </style>
+</head>
+<body>
+    <main class="portal-shell">
+        <section class="portal-card owner-login">
+            <p class="eyebrow">OWNER PORTAL</p>
+            <h1>Secure owner sign in</h1>
+            <p class="muted">Sign in to manage customers, jobs, messages and portfolio content.</p>
+            <div id="loginError" class="error" role="alert"></div>
+            <form id="ownerLoginForm">
+                <label>Email<input id="ownerEmail" type="email" autocomplete="username" required></label>
+                <label>Password<input id="ownerPassword" type="password" autocomplete="current-password" required></label>
+                <label><span><input id="rememberOwner" type="checkbox"> Keep me signed in for 7 days</span></label>
+                <button class="btn btn-primary" type="submit">Sign in securely</button>
+            </form>
+            <p class="muted"><a href="portal.html">Back to Customer Portal</a></p>
+        </section>
+    </main>
+    <script>
+        const API = "https://adan-portfolio-api.adanfuau1.workers.dev";
+        const form = document.getElementById("ownerLoginForm");
+        const error = document.getElementById("loginError");
+        fetch(`${API}/auth/me`, { credentials: "include" }).then(r => r.json()).then(data => {
+            if (data.account?.role === "owner") location.href = "owner.html";
+        }).catch(() => {});
+        form.addEventListener("submit", async event => {
+            event.preventDefault();
+            error.textContent = "";
+            try {
+                const response = await fetch(`${API}/auth/login`, {
+                    method: "POST",
+                    credentials: "include",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        email: document.getElementById("ownerEmail").value.trim(),
+                        password: document.getElementById("ownerPassword").value,
+                        remember: document.getElementById("rememberOwner").checked
+                    })
+                });
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error || "Sign in failed.");
+                if (data.account?.role !== "owner") throw new Error("This account is not an owner account.");
+                location.href = "owner.html";
+            } catch (err) {
+                error.textContent = err.message;
+            }
+        });
+    </script>
+</body>
+</html>

@@ -547,7 +547,8 @@ export async function handlePortalFeature(
 
             const result = await env.DB.prepare(`
                 SELECT id, title, description, status, payment_method,
-                    payment_status, created_at, updated_at
+                    payment_status, price_amount, deadline,
+                    created_at, updated_at
                 FROM jobs
                 WHERE account_id = ?
                 ORDER BY id DESC
@@ -647,6 +648,7 @@ export async function handlePortalFeature(
                 SELECT
                     j.id, j.account_id, j.title, j.description,
                     j.status, j.payment_method, j.payment_status,
+                    j.price_amount, j.deadline,
                     j.created_at, j.updated_at,
                     a.display_name AS customer_name,
                     a.email AS customer_email
@@ -685,10 +687,15 @@ export async function handlePortalFeature(
             ];
             const status = String(body.status || "");
             const paymentStatus = String(body.payment_status || "");
+            const priceAmount = body.price_amount === null || body.price_amount === ""
+                ? null
+                : Number(body.price_amount);
+            const deadline = String(body.deadline || "").trim() || null;
 
             if (
                 !allowedStatuses.includes(status) ||
                 !allowedPayments.includes(paymentStatus)
+                || (priceAmount !== null && (!Number.isFinite(priceAmount) || priceAmount < 0))
             ) {
                 return json(
                     { error: "Invalid job or payment status." },
@@ -697,14 +704,35 @@ export async function handlePortalFeature(
                 );
             }
 
+            const before = await env.DB.prepare(
+                "SELECT status, payment_status, account_id, title FROM jobs WHERE id = ?"
+            ).bind(jobId).first();
             const result = await env.DB.prepare(`
                 UPDATE jobs
-                SET status = ?, payment_status = ?, updated_at = CURRENT_TIMESTAMP
+                SET status = ?, payment_status = ?, price_amount = ?, deadline = ?, updated_at = CURRENT_TIMESTAMP
                 WHERE id = ?
-            `).bind(status, paymentStatus, jobId).run();
+            `).bind(status, paymentStatus, priceAmount, deadline, jobId).run();
 
             if (!result.meta.changes) {
                 return json({ error: "Job not found." }, 404, origin);
+            }
+
+            await env.DB.prepare(`
+                INSERT INTO audit_logs
+                (actor_account_id, action, entity_type, entity_id, details)
+                VALUES (?, 'job_updated', 'job', ?, ?)
+            `).bind(
+                account.id,
+                jobId,
+                JSON.stringify({ status, paymentStatus, priceAmount, deadline })
+            ).run();
+
+            if (before && (before.status !== status || before.payment_status !== paymentStatus)) {
+                await notifyOwner(
+                    env,
+                    `Job #${jobId} updated\n\nTitle: ${before.title}\nStatus: ${before.status} → ${status}\nPayment: ${before.payment_status} → ${paymentStatus}`,
+                    "Adan Portfolio Job Status Updated"
+                );
             }
 
             return json({ success: true }, 200, origin);

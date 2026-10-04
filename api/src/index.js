@@ -1,6 +1,7 @@
 ﻿import { handlePortalFeature } from "./portal-features.js";
 
 const SESSION_DAYS = 7;
+const DEFAULT_SESSION_DAYS = 1;
 const PASSWORD_ITERATIONS = 100000;
 const RATE_LIMIT_WINDOW_SECONDS = 15 * 60;
 const LOGIN_RATE_LIMIT = 8;
@@ -321,9 +322,11 @@ async function login(request, env) {
 
     const sessionId = await randomHex(32);
 
+    const remember = body.remember === true;
+    const sessionDays = remember ? SESSION_DAYS : DEFAULT_SESSION_DAYS;
     const expiresAt =
         Math.floor(Date.now() / 1000) +
-        SESSION_DAYS * 24 * 60 * 60;
+        sessionDays * 24 * 60 * 60;
 
     await env.DB
         .prepare(`
@@ -343,7 +346,8 @@ async function login(request, env) {
             id: account.id,
             email: account.email,
             display_name: account.display_name,
-            role: account.role
+            role: account.role,
+            remember
         },
         sessionId
     };
@@ -420,7 +424,9 @@ export default {
                             ...securityHeaders(origin),
                             "Set-Cookie": sessionCookie(
                                 result.sessionId,
-                                SESSION_DAYS * 24 * 60 * 60
+                                result.account.remember
+                                    ? SESSION_DAYS * 24 * 60 * 60
+                                    : DEFAULT_SESSION_DAYS * 24 * 60 * 60
                             )
                         }
                     }
