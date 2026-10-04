@@ -287,6 +287,39 @@
             line-height: 1.6;
         }
 
+        .profile-card {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(280px, 420px);
+            gap: 24px;
+            align-items: center;
+        }
+
+        .profile-form {
+            display: grid;
+            gap: 12px;
+        }
+
+        .profile-preview {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .profile-avatar {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(56, 189, 248, 0.5);
+            background: #172033;
+        }
+
+        .profile-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
         .hidden {
             display: none !important;
         }
@@ -315,6 +348,9 @@
 
         @media (max-width: 800px) {
             .customer-tool-grid {
+                grid-template-columns: 1fr;
+            }
+            .profile-card {
                 grid-template-columns: 1fr;
             }
             .portal-grid {
@@ -520,6 +556,32 @@
             </div>
 
         </div>
+
+        <section class="portal-card profile-card" style="margin-bottom:20px;">
+            <div>
+                <p class="eyebrow">PROFILE</p>
+                <h2>Choose your review avatar</h2>
+                <p class="muted">
+                    Paste your Discord avatar URL or a custom HTTPS image URL.
+                    It will be shown beside your approved reviews.
+                </p>
+            </div>
+            <form id="profileForm" class="profile-form">
+                <div class="profile-preview">
+                    <img id="profileAvatarPreview" class="profile-avatar" alt="Your profile avatar">
+                    <span id="profileAvatarStatus" class="muted">No custom avatar selected</span>
+                </div>
+                <label>
+                    Avatar URL
+                    <input id="profileAvatarUrl" type="url" maxlength="500"
+                        placeholder="https://cdn.discordapp.com/avatars/...">
+                </label>
+                <div class="profile-actions">
+                    <button class="btn btn-primary" type="submit">Save Avatar</button>
+                    <button id="clearAvatarButton" class="btn" type="button">Use Default</button>
+                </div>
+            </form>
+        </section>
 
         <div class="portal-grid">
 
@@ -848,7 +910,48 @@ function showCustomer() {
             currentAccount?.email ||
             "Customer"
         }!`;
+
+    $("profileAvatarUrl").value = currentAccount?.avatar_url || "";
+    updateProfileAvatarPreview(currentAccount?.avatar_url);
 }
+
+function updateProfileAvatarPreview(url) {
+    const preview = $("profileAvatarPreview");
+    const status = $("profileAvatarStatus");
+    const value = String(url || "").trim();
+    preview.src = value || "assets/uploads/1791019126875-30671a71-noobdude-pfp.png";
+    status.textContent = value
+        ? "Custom avatar selected"
+        : "Using the default avatar";
+}
+
+$("profileAvatarUrl").addEventListener("input", event => {
+    updateProfileAvatarPreview(event.target.value);
+});
+
+$("clearAvatarButton").addEventListener("click", () => {
+    $("profileAvatarUrl").value = "";
+    updateProfileAvatarPreview("");
+});
+
+$("profileForm").addEventListener("submit", async event => {
+    event.preventDefault();
+
+    try {
+        const data = await api("/auth/profile", {
+            method: "PATCH",
+            body: JSON.stringify({
+                avatar_url: $("profileAvatarUrl").value.trim()
+            })
+        });
+
+        currentAccount.avatar_url = data.avatar_url;
+        updateProfileAvatarPreview(data.avatar_url);
+        toast("Profile avatar saved.", "success");
+    } catch (error) {
+        toast(error.message, "error");
+    }
+});
 
 function showGuestChat() {
     hide("authView");

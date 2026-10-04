@@ -555,7 +555,9 @@ async function loadReviews() {
                             <img
                                 class="review-avatar"
                                 src="${escapeAttribute(
-                                    review.avatar || "assets/uploads/1791019126875-30671a71-noobdude-pfp.png"
+                                    review.avatar_url ||
+                                    review.avatar ||
+                                    "assets/uploads/1791019126875-30671a71-noobdude-pfp.png"
                                 )}"
                                 alt=""
                             >

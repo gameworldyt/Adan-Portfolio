@@ -246,6 +246,7 @@ async function getCurrentAccount(request, env) {
                 accounts.id,
                 accounts.email,
                 accounts.display_name,
+                accounts.avatar_url,
                 accounts.role,
                 accounts.active
             FROM sessions
@@ -476,9 +477,62 @@ export default {
                                 email: account.email,
                                 display_name:
                                     account.display_name,
+                                avatar_url:
+                                    account.avatar_url || null,
                                 role: account.role
                             }
                             : null
+                    },
+                    200,
+                    origin
+                );
+            }
+
+            if (
+                request.method === "PATCH" &&
+                path === "/auth/profile"
+            ) {
+                const customer =
+                    await getCurrentAccount(request, env);
+
+                if (!customer || customer.role !== "customer") {
+                    return json(
+                        { error: "Customer access required." },
+                        403,
+                        origin
+                    );
+                }
+
+                const body = await request.json();
+                const avatarUrl = String(body.avatar_url || "").trim();
+
+                if (
+                    avatarUrl &&
+                    (
+                        avatarUrl.length > 500 ||
+                        !/^https:\/\/[^\s]+$/i.test(avatarUrl)
+                    )
+                ) {
+                    return json(
+                        {
+                            error:
+                                "Avatar must be a valid HTTPS image URL."
+                        },
+                        400,
+                        origin
+                    );
+                }
+
+                await env.DB.prepare(
+                    "UPDATE accounts SET avatar_url = ? WHERE id = ?"
+                )
+                    .bind(avatarUrl || null, customer.id)
+                    .run();
+
+                return json(
+                    {
+                        success: true,
+                        avatar_url: avatarUrl || null
                     },
                     200,
                     origin

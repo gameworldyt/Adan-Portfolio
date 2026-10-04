@@ -401,7 +401,8 @@ export async function handlePortalFeature(
                     r.rating,
                     r.review_text,
                     r.created_at,
-                    a.display_name
+                    a.display_name,
+                    a.avatar_url
                 FROM reviews r
                 INNER JOIN accounts a
                     ON a.id = r.account_id
