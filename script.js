@@ -3,6 +3,22 @@
 ========================================== */
 
 document.addEventListener("DOMContentLoaded", () => {
+    const menuToggle = document.querySelector(".menu-toggle");
+    const navigation = document.querySelector(".navbar nav");
+
+    if (menuToggle && navigation) {
+        navigation.id = "site-navigation";
+        menuToggle.addEventListener("click", () => {
+            const open = document.body.classList.toggle("menu-open");
+            menuToggle.setAttribute("aria-expanded", String(open));
+        });
+        navigation.querySelectorAll("a").forEach(link => {
+            link.addEventListener("click", () => {
+                document.body.classList.remove("menu-open");
+                menuToggle.setAttribute("aria-expanded", "false");
+            });
+        });
+    }
 
     /* ==========================================
        YEAR
@@ -141,42 +157,29 @@ document.addEventListener("DOMContentLoaded", () => {
        PROJECT 3D TILT
     ========================================== */
 
-    document
-        .querySelectorAll(".project-card")
-        .forEach(card => {
+    if (window.matchMedia("(pointer: fine) and (prefers-reduced-motion: no-preference)").matches) {
+        document
+            .querySelectorAll(".project-card")
+            .forEach(card => {
+                card.addEventListener("mousemove", event => {
+                    const rect = card.getBoundingClientRect();
+                    const x = event.clientX - rect.left;
+                    const y = event.clientY - rect.top;
+                    const rotateY = ((x / rect.width) - 0.5) * 8;
+                    const rotateX = ((y / rect.height) - 0.5) * -8;
 
-            card.addEventListener("mousemove", event => {
+                    card.style.transform = `perspective(900px)
+                        rotateX(${rotateX}deg)
+                        rotateY(${rotateY}deg)
+                        translateY(-8px)`;
+                });
 
-                const rect =
-                    card.getBoundingClientRect();
-
-                const x =
-                    event.clientX - rect.left;
-
-                const y =
-                    event.clientY - rect.top;
-
-                const rotateY =
-                    ((x / rect.width) - 0.5) * 8;
-
-                const rotateX =
-                    ((y / rect.height) - 0.5) * -8;
-
-                card.style.transform =
-                    `perspective(900px)
-                     rotateX(${rotateX}deg)
-                     rotateY(${rotateY}deg)
-                     translateY(-8px)`;
-
+                card.addEventListener("mouseleave", () => {
+                    card.style.transform = "";
+                });
             });
+    }
 
-            card.addEventListener("mouseleave", () => {
-
-                card.style.transform = "";
-
-            });
-
-        });
 
 
     /* ==========================================
@@ -223,33 +226,23 @@ document.addEventListener("DOMContentLoaded", () => {
        MAGNETIC BUTTONS
     ========================================== */
 
-    document
-        .querySelectorAll(".button")
-        .forEach(button => {
+    if (window.matchMedia("(pointer: fine) and (prefers-reduced-motion: no-preference)").matches) {
+        document
+            .querySelectorAll(".button")
+            .forEach(button => {
+                button.addEventListener("mousemove", event => {
+                    const rect = button.getBoundingClientRect();
+                    const x = event.clientX - rect.left - rect.width / 2;
+                    const y = event.clientY - rect.top - rect.height / 2;
+                    button.style.transform =
+                        `translate(${x * 0.08}px, ${y * 0.08}px)`;
+                });
 
-            button.addEventListener("mousemove", event => {
-
-                const rect =
-                    button.getBoundingClientRect();
-
-                const x =
-                    event.clientX - rect.left - rect.width / 2;
-
-                const y =
-                    event.clientY - rect.top - rect.height / 2;
-
-                button.style.transform =
-                    `translate(${x * 0.08}px, ${y * 0.08}px)`;
-
+                button.addEventListener("mouseleave", () => {
+                    button.style.transform = "";
+                });
             });
-
-            button.addEventListener("mouseleave", () => {
-
-                button.style.transform = "";
-
-            });
-
-        });
+    }
 
 });
 
@@ -267,15 +260,19 @@ async function loadExperience() {
 
     try {
 
-        const response =
-            await fetch("./data/experience.json");
+        const response = await fetchWithFallback(
+            "/experience",
+            "./data/experience.json"
+        );
 
-        if (!response.ok) {
-            throw new Error("Experience data unavailable.");
-        }
-
-        const data =
-            await response.json();
+        const data = Array.isArray(response.experience)
+            ? response.experience.reduce((groups, experience) => {
+                const category = groups[experience.category] || [];
+                category.push(experience);
+                groups[experience.category] = category;
+                return groups;
+            }, {})
+            : response;
 
         container.innerHTML = "";
 
@@ -394,16 +391,18 @@ async function loadFeaturedWork() {
 
     try {
 
-        const response =
-            await fetch("./data/projects.json");
-
-        const data =
-            await response.json();
-
-        const projects =
-            data.featured || [];
+        const data = await fetchWithFallback(
+            "/projects",
+            "./data/projects.json"
+        );
+        const projects = normalizeProjects(data);
 
         if (!projects.length) return;
+
+        section.innerHTML = "";
+        renderProjectCards(section, projects);
+        const featuredProjects = projects.filter(project => project.featured);
+        const carouselProjects = featuredProjects.length ? featuredProjects : projects;
 
         let current = 0;
 
@@ -422,8 +421,7 @@ async function loadFeaturedWork() {
 
         function render() {
 
-            const project =
-                projects[current];
+            const project = carouselProjects[current];
 
             wrapper.innerHTML = `
                 <div class="featured-content">
@@ -475,8 +473,8 @@ async function loadFeaturedWork() {
                 .onclick = () => {
 
                     current =
-                        (current - 1 + projects.length)
-                        % projects.length;
+                    (current - 1 + carouselProjects.length)
+                    % carouselProjects.length;
 
                     render();
 
@@ -488,7 +486,7 @@ async function loadFeaturedWork() {
 
                     current =
                         (current + 1)
-                        % projects.length;
+                    % carouselProjects.length;
 
                     render();
 
@@ -502,7 +500,7 @@ async function loadFeaturedWork() {
 
             current =
                 (current + 1)
-                % projects.length;
+                % carouselProjects.length;
 
             render();
 
@@ -536,17 +534,20 @@ async function loadReviews() {
         const response =
             await fetch("./data/reviews.json");
 
+        if (!response.ok) {
+            throw new Error("Reviews unavailable.");
+        }
+
         const data =
             await response.json();
 
         const reviews =
             data.reviews || [];
 
-        if (!reviews.length) return;
+        const approvedReviews = reviews.filter(review => review.approved);
 
         container.innerHTML =
-            reviews
-                .filter(review => review.approved)
+            approvedReviews
                 .map(review => `
 
                     <article class="review-card glass-card">
@@ -596,7 +597,13 @@ async function loadReviews() {
                     </article>
 
                 `)
-                .join("");
+                .join("") || `
+                    <div class="empty-state glass-card">
+                        <div class="empty-icon">⭐</div>
+                        <h3>No approved reviews yet</h3>
+                        <p>Reviews will appear here after they have been submitted and approved.</p>
+                    </div>
+                `;
 
     } catch (error) {
 
@@ -607,6 +614,57 @@ async function loadReviews() {
 
     }
 
+}
+
+const API_BASE = "https://adan-portfolio-api.adanfuau1.workers.dev";
+
+async function fetchWithFallback(apiPath, fallbackPath) {
+    try {
+        const apiResponse = await fetch(`${API_BASE}${apiPath}`);
+        if (apiResponse.ok) {
+            return await apiResponse.json();
+        }
+    } catch (error) {
+        console.warn(`API request failed for ${apiPath}; using static data.`, error);
+    }
+
+    const fallbackResponse = await fetch(fallbackPath);
+    if (!fallbackResponse.ok) {
+        throw new Error(`Unable to load ${fallbackPath}.`);
+    }
+    return fallbackResponse.json();
+}
+
+function normalizeProjects(data) {
+    const projects = data.projects || data.featured || [];
+    return projects.map((project, index) => ({
+        title: project.title || "Untitled project",
+        description: project.description || "A digital project in development.",
+        tags: Array.isArray(project.tags)
+            ? project.tags
+            : String(project.category || "Development").split(",").map(tag => tag.trim()),
+        status: project.status || project.category || "Development",
+        icon: project.icon || "✨",
+        featured: Boolean(project.featured),
+        index
+    }));
+}
+
+function renderProjectCards(container, projects) {
+    container.insertAdjacentHTML("beforeend", projects.map((project, index) => `
+        <article class="project-card glass-card">
+            <div class="project-top">
+                <span class="project-number">${String(index + 1).padStart(2, "0")}</span>
+                <span class="project-status">${escapeHTML(project.status)}</span>
+            </div>
+            <div class="project-icon">${escapeHTML(project.icon)}</div>
+            <h3>${escapeHTML(project.title)}</h3>
+            <p>${escapeHTML(project.description)}</p>
+            <div class="project-tags">
+                ${project.tags.map(tag => `<span>${escapeHTML(tag)}</span>`).join("")}
+            </div>
+        </article>
+    `).join(""));
 }
 
 

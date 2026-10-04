@@ -223,6 +223,36 @@ a {
         0 0 18px rgba(56, 189, 248, 0.8);
 }
 
+.menu-toggle {
+    display: none;
+    border: 0;
+    background: transparent;
+    color: var(--text);
+    cursor: pointer;
+    padding: 8px;
+}
+
+.menu-toggle span:not(.sr-only) {
+    display: block;
+    width: 22px;
+    height: 2px;
+    margin: 4px 0;
+    background: currentColor;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
 .nav-button {
     padding: 10px 16px;
 
@@ -1390,6 +1420,32 @@ footer {
         display: none;
     }
 
+    .menu-toggle {
+        display: block;
+    }
+
+    .navbar nav {
+        position: absolute;
+        top: calc(100% + 8px);
+        left: 0;
+        right: 0;
+        padding: 12px;
+        flex-direction: column;
+        gap: 2px;
+        border: 1px solid rgba(56, 189, 248, 0.18);
+        border-radius: 14px;
+        background: rgba(3, 7, 18, 0.96);
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+    }
+
+    .menu-open .navbar nav {
+        display: flex;
+    }
+
+    .navbar nav a {
+        padding: 12px;
+    }
+
     .hero {
         grid-template-columns: 1fr;
 
@@ -1444,10 +1500,6 @@ footer {
 
     .navbar {
         width: calc(100% - 20px);
-    }
-
-    .nav-button {
-        display: none;
     }
 
 }

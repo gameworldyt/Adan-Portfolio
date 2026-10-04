@@ -18,15 +18,14 @@ function json(data, status = 200, origin = "*") {
 
 function getOrigin(request, env) {
     const requestOrigin = request.headers.get("Origin");
+    const allowedOrigins = String(env.ALLOWED_ORIGIN || "")
+        .split(",")
+        .map(value => value.trim())
+        .filter(Boolean);
 
-    if (
-        env.ALLOWED_ORIGIN === "*" ||
-        !env.ALLOWED_ORIGIN
-    ) {
-        return requestOrigin || "*";
-    }
-
-    return env.ALLOWED_ORIGIN;
+    return requestOrigin && allowedOrigins.includes(requestOrigin)
+        ? requestOrigin
+        : allowedOrigins[0] || "null";
 }
 
 function getCookie(request, name) {
@@ -590,12 +589,21 @@ export default {
                     .bind(id)
                     .run();
 
-                await env.DB
+                const deletion =
+                    await env.DB
                     .prepare(
                         "DELETE FROM accounts WHERE id = ? AND role = 'customer'"
                     )
                     .bind(id)
                     .run();
+
+                if (!deletion.meta.changes) {
+                    return json(
+                        { error: "Customer account not found." },
+                        404,
+                        origin
+                    );
+                }
 
                 return json(
                     { success: true },
@@ -753,6 +761,7 @@ export default {
                         .trim();
 
                 if (
+                    !Number.isInteger(rating) ||
                     rating < 1 ||
                     rating > 5 ||
                     !reviewText
@@ -1302,5 +1311,3 @@ export default {
         }
     }
 };
-
-

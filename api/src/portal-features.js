@@ -1260,11 +1260,17 @@ ${message}`
             }
 
             if (request.method === "POST") {
-                if (account.role !== "customer") {
+                if (
+                    !account ||
+                    (
+                        account.role !== "owner" &&
+                        account.role !== "customer"
+                    )
+                ) {
                     return json(
                         {
                             error:
-                                "Use the owner conversation endpoint for owner messages."
+                                "You do not have permission to send messages."
                         },
                         403,
                         origin
@@ -1860,7 +1866,3 @@ ${message}`
         );
     }
 }
-
-
-
-
