@@ -1323,6 +1323,44 @@ a {
     font-weight: 800;
 }
 
+.discord-support {
+    width: min(620px, 100%);
+    margin: 28px auto 0;
+    padding: 18px 22px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    text-align: left;
+    border: 1px solid rgba(165, 180, 252, 0.28);
+    border-radius: 18px;
+    background: rgba(99, 102, 241, 0.1);
+}
+
+.discord-support-icon {
+    display: grid;
+    width: 42px;
+    height: 42px;
+    flex: 0 0 42px;
+    place-items: center;
+    border-radius: 13px;
+    background: rgba(129, 140, 248, 0.18);
+    font-size: 1.35rem;
+}
+
+.discord-support h3 {
+    margin-bottom: 4px;
+    font-size: 1rem;
+}
+
+.discord-support p {
+    color: #c4b5fd;
+    line-height: 1.5;
+}
+
+.discord-support strong {
+    color: #e0e7ff;
+}
+
 /* ==========================================
    FOOTER
 ========================================== */
@@ -1496,6 +1534,11 @@ footer {
         text-align: center;
 
         align-items: stretch;
+    }
+
+    .discord-support {
+        align-items: flex-start;
+        text-align: left;
     }
 
     .navbar {
