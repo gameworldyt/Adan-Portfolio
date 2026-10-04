@@ -595,6 +595,30 @@ export async function handlePortalFeature(
                 paymentMethod
             ).run();
 
+            const conversation = await env.DB.prepare(`
+                INSERT INTO conversations
+                (account_id, status)
+                VALUES (?, 'open')
+            `).bind(account.id).run();
+
+            const conversationId = conversation.meta.last_row_id;
+
+            await env.DB.prepare(`
+                INSERT INTO messages
+                (conversation_id, sender_account_id, message_text)
+                VALUES (?, ?, ?)
+            `).bind(
+                conversationId,
+                account.id,
+                `Job request: ${title}\n\n${description}\n\nPayment method: ${paymentMethod}`
+            ).run();
+
+            await env.DB.prepare(`
+                UPDATE jobs
+                SET conversation_id = ?
+                WHERE id = ?
+            `).bind(conversationId, result.meta.last_row_id).run();
+
             await notifyOwner(
                 env,
                 `🛠️ New job request\n\nCustomer: ${account.display_name}\nEmail: ${account.email}\nTitle: ${title}\nPayment: ${paymentMethod}\n\n${description}`,
@@ -602,7 +626,11 @@ export async function handlePortalFeature(
             );
 
             return json(
-                { success: true, job_id: result.meta.last_row_id },
+                {
+                    success: true,
+                    job_id: result.meta.last_row_id,
+                    conversation_id: conversationId
+                },
                 201,
                 origin
             );

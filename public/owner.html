@@ -571,6 +571,16 @@
         <div class="owner-card">
             <h2>🛠️ Customer Job Requests</h2>
             <p class="muted">Update work progress and payment status for every request.</p>
+            <label>
+                View jobs
+                <select id="jobFilter">
+                    <option value="all">All jobs</option>
+                    <option value="ongoing">Ongoing jobs</option>
+                    <option value="requested">Requested</option>
+                    <option value="completed">Completed</option>
+                    <option value="cancelled">Cancelled</option>
+                </select>
+            </label>
             <div id="jobList" class="list">Loading...</div>
         </div>
     </section>
@@ -1979,10 +1989,17 @@ async function loadCustomers() {
 async function loadJobs() {
     const data = await api("/admin/jobs");
     const jobs = data.jobs || [];
+    const filter = $("jobFilter")?.value || "all";
+    const visibleJobs = jobs.filter(job => {
+        if (filter === "ongoing") {
+            return ["accepted", "in_progress", "awaiting_payment"].includes(job.status);
+        }
+        return filter === "all" || job.status === filter;
+    });
     const list = $("jobList");
 
-    list.innerHTML = jobs.length
-        ? jobs.map(job => `
+    list.innerHTML = visibleJobs.length
+        ? visibleJobs.map(job => `
             <article class="owner-card" style="margin-top:14px;">
                 <div style="display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;">
                     <div>
@@ -2034,6 +2051,8 @@ async function loadJobs() {
         `).join("")
         : "<p class='muted'>No customer job requests yet.</p>";
 }
+
+$("jobFilter").addEventListener("change", loadJobs);
 
 async function saveJob(id) {
     try {

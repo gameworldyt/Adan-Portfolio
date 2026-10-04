@@ -981,7 +981,8 @@ async function checkSession() {
     }
 
     if (currentAccount.role === "owner") {
-        window.location.href = "owner.html";
+        showAuth();
+        toast("Owner accounts must use the Owner Portal.", "error");
         return;
     }
 
@@ -1600,26 +1601,7 @@ $("newCustomerConversationForm")
                         }
                     );
 
-$("jobRequestForm").addEventListener("submit", async event => {
-                    event.preventDefault();
-                    try {
-                        await api("/jobs", {
-                            method: "POST",
-                            body: JSON.stringify({
-                                title: $("jobTitle").value.trim(),
-                                description: $("jobDescription").value.trim(),
-                                payment_method: $("jobPaymentMethod").value
-                            })
-                        });
-                        $("jobRequestForm").reset();
-                        await loadCustomerJobs();
-                        toast("Job request sent successfully.", "success");
-                    } catch (error) {
-                        toast(error.message, "error");
-                    }
-});
-
-                textarea.value = "";
+               textarea.value = "";
 
                 currentCustomerConversation =
                     data.conversation_id;
@@ -1643,6 +1625,30 @@ $("jobRequestForm").addEventListener("submit", async event => {
             }
         }
     );
+
+$("jobRequestForm").addEventListener("submit", async event => {
+    event.preventDefault();
+
+    try {
+        const data = await api("/jobs", {
+            method: "POST",
+            body: JSON.stringify({
+                title: $("jobTitle").value.trim(),
+                description: $("jobDescription").value.trim(),
+                payment_method: $("jobPaymentMethod").value
+            })
+        });
+
+        $("jobRequestForm").reset();
+        await loadCustomerJobs();
+        currentCustomerConversation = data.conversation_id;
+        await loadCustomerConversations();
+        await selectCustomerConversation(data.conversation_id);
+        toast("Job request sent and chat opened.", "success");
+    } catch (error) {
+        toast(error.message, "error");
+    }
+});
 
 /* =========================
    REVIEWS
