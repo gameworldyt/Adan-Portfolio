@@ -1,0 +1,12 @@
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://adan-portfolio-api.adanfuau1.workers.dev; frame-ancestors 'none'; base-uri 'self'; form-action 'self'
+
+/owner.html
+  Cache-Control: no-store
+
+/portal.html
+  Cache-Control: no-store

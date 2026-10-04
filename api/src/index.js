@@ -2,16 +2,31 @@
 
 const SESSION_DAYS = 7;
 const PASSWORD_ITERATIONS = 100000;
+const RATE_LIMIT_WINDOW_SECONDS = 15 * 60;
+const LOGIN_RATE_LIMIT = 8;
+const WRITE_RATE_LIMIT = 120;
 
-function json(data, status = 200, origin = "*") {
+function securityHeaders(origin) {
+    return {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": origin,
+        "Access-Control-Allow-Credentials": "true",
+        "Access-Control-Allow-Headers": "Content-Type",
+        "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
+        "Vary": "Origin",
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "DENY",
+        "Referrer-Policy": "no-referrer",
+        "Content-Security-Policy": "default-src 'none'; frame-ancestors 'none'"
+    };
+}
+
+function json(data, status = 200, origin = "null", extraHeaders = {}) {
     return new Response(JSON.stringify(data), {
         status,
         headers: {
-            "Content-Type": "application/json",
-            "Access-Control-Allow-Origin": origin,
-            "Access-Control-Allow-Credentials": "true",
-            "Access-Control-Allow-Headers": "Content-Type",
-            "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS"
+            ...securityHeaders(origin),
+            ...extraHeaders
         }
     });
 }
@@ -25,7 +40,60 @@ function getOrigin(request, env) {
 
     return requestOrigin && allowedOrigins.includes(requestOrigin)
         ? requestOrigin
-        : allowedOrigins[0] || "null";
+        : "null";
+}
+
+function isAllowedOrigin(request, env) {
+    const requestOrigin = request.headers.get("Origin");
+    if (!requestOrigin) return true;
+
+    return String(env.ALLOWED_ORIGIN || "")
+        .split(",")
+        .map(value => value.trim())
+        .includes(requestOrigin);
+}
+
+function requestKey(request, prefix) {
+    return `${prefix}:${request.headers.get("CF-Connecting-IP") || "unknown"}`;
+}
+
+async function consumeRateLimit(env, key, limit) {
+    const now = Math.floor(Date.now() / 1000);
+    const current = await env.DB
+        .prepare("SELECT window_start, count FROM rate_limits WHERE key = ?")
+        .bind(key)
+        .first();
+
+    if (!current || now - current.window_start >= RATE_LIMIT_WINDOW_SECONDS) {
+        await env.DB
+            .prepare(`
+                INSERT INTO rate_limits (key, window_start, count)
+                VALUES (?, ?, 1)
+                ON CONFLICT(key) DO UPDATE SET
+                    window_start = excluded.window_start,
+                    count = 1
+            `)
+            .bind(key, now)
+            .run();
+        return { allowed: true, retryAfter: RATE_LIMIT_WINDOW_SECONDS };
+    }
+
+    if (current.count >= limit) {
+        return {
+            allowed: false,
+            retryAfter: Math.max(1, RATE_LIMIT_WINDOW_SECONDS - (now - current.window_start))
+        };
+    }
+
+    await env.DB
+        .prepare("UPDATE rate_limits SET count = count + 1 WHERE key = ?")
+        .bind(key)
+        .run();
+
+    return {
+        allowed: true,
+        retryAfter: Math.max(1, RATE_LIMIT_WINDOW_SECONDS - (now - current.window_start))
+    };
 }
 
 function getCookie(request, name) {
@@ -291,16 +359,41 @@ export default {
                     "Access-Control-Allow-Origin": origin,
                     "Access-Control-Allow-Credentials": "true",
                     "Access-Control-Allow-Headers": "Content-Type",
-                    "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS"
+                    "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
+                    "Vary": "Origin"
                 }
             });
         }
 
         try {
-            await ensureOwner(env);
+            if (!isAllowedOrigin(request, env)) {
+                return json({ error: "Origin is not allowed." }, 403, "null");
+            }
 
             const url = new URL(request.url);
             const path = url.pathname;
+
+            if (request.method !== "GET") {
+                const limit = path === "/auth/login"
+                    ? LOGIN_RATE_LIMIT
+                    : WRITE_RATE_LIMIT;
+                const rate = await consumeRateLimit(
+                    env,
+                    requestKey(request, path === "/auth/login" ? "login" : "write"),
+                    limit
+                );
+
+                if (!rate.allowed) {
+                    return json(
+                        { error: "Too many requests. Please try again later." },
+                        429,
+                        origin,
+                        { "Retry-After": String(rate.retryAfter) }
+                    );
+                }
+            }
+
+            await ensureOwner(env);
 
             if (
                 request.method === "POST" &&
@@ -323,13 +416,11 @@ export default {
                     {
                         status: 200,
                         headers: {
-                            "Content-Type": "application/json",
+                            ...securityHeaders(origin),
                             "Set-Cookie": sessionCookie(
                                 result.sessionId,
                                 SESSION_DAYS * 24 * 60 * 60
-                            ),
-                            "Access-Control-Allow-Origin": origin,
-                            "Access-Control-Allow-Credentials": "true"
+                            )
                         }
                     }
                 );
