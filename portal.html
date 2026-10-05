@@ -398,6 +398,9 @@
             and manage your customer conversations.
         </p>
         <p class="muted"><a href="terms.html">Read Terms &amp; Return Policy</a></p>
+        <p>
+            <a class="button secondary" href="owner-login.html">Owner Sign In →</a>
+        </p>
     </section>
 
     <!-- AUTH -->
@@ -1075,6 +1078,11 @@ $("loginForm").addEventListener(
             );
 
             currentAccount = data.account || null;
+
+            if (currentAccount?.role === "owner") {
+                window.location.href = "owner.html";
+                return;
+            }
 
             if (!currentAccount || currentAccount.role !== "customer") {
                 throw new Error("This sign-in is for customer accounts only.");
