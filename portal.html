@@ -1054,30 +1054,49 @@ $("loginForm").addEventListener(
             $("loginPassword")
                 .value;
 
+        const submitButton =
+            event.submitter ||
+            $("loginForm").querySelector("button[type='submit']");
+
         try {
-            await api(
+            submitButton.disabled = true;
+            submitButton.textContent = "Signing in...";
+
+            const data = await api(
                 "/auth/login",
                 {
                     method: "POST",
                     body: JSON.stringify({
                         email,
-                        password
+                        password,
+                        remember: false
                     })
                 }
             );
+
+            currentAccount = data.account || null;
+
+            if (!currentAccount || currentAccount.role !== "customer") {
+                throw new Error("This sign-in is for customer accounts only.");
+            }
 
             toast(
                 "Signed in successfully!",
                 "success"
             );
 
-            await checkSession();
+            showCustomer();
+            await loadCustomerConversations();
+            await loadCustomerJobs();
 
         } catch (error) {
             toast(
                 error.message,
                 "error"
             );
+        } finally {
+            submitButton.disabled = false;
+            submitButton.textContent = "Sign In →";
         }
     }
 );
